@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subjects - Student Performance Predictor</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="inner">
+            <h1>Subjects</h1>
+            <p class="introduction">Register the subjects students can enroll in.</p>
+            <a class="header-link" href="/">← Back to students</a>
+        </div>
+    </header>
+    <main>
+        <section class="panel">
+            <h2>Add subject</h2>
+            <form id="subject-form">
+                <label for="subject-name">Name</label>
+                <input id="subject-name" type="text" required>
+
+                <label for="subject-difficulty">Difficulty</label>
+                <select id="subject-difficulty" required>
+                    <option value="" disabled selected>Select a difficulty</option>
+                    <option value="EASY">Easy</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HARD">Hard</option>
+                </select>
+
+                <div class="form-actions">
+                    <button type="submit">Save subject</button>
+                </div>
+            </form>
+            <p id="message" role="status"></p>
+        </section>
+
+        <section class="panel">
+            <h2>Registered subjects</h2>
+            <div id="subject-list"></div>
+        </section>
+    </main>
+    <script src="/subject.js"></script>
+</body>
+</html>
