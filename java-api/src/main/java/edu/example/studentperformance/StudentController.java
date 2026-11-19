@@ -9,6 +9,7 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -48,6 +49,7 @@ public class StudentController implements HttpHandler {
     // El controlador delegará en él todas las operaciones
     // relacionadas con los estudiantes y sus predicciones.
     private final StudentService service;
+    private final ReportService reportService;
 
     // Gson es una biblioteca que permite transformar:
     //
@@ -67,10 +69,11 @@ public class StudentController implements HttpHandler {
      * De esta manera, el controlador puede utilizar el servicio
      * sin tener que encargarse de crearlo.
      */
-    public StudentController(StudentService service) {
+    public StudentController(StudentService service, ReportService reportService) {
 
         // Guardamos la referencia al servicio recibido.
         this.service = service;
+        this.reportService = reportService;
 
         // Creamos el objeto Gson para trabajar con JSON.
         gson = new Gson();
@@ -222,6 +225,12 @@ public class StudentController implements HttpHandler {
 
                 // Delegamos en el método de predicciones.
                 handlePrediction(exchange, method, id);
+                return;
+            }
+
+            if ("report".equals(parts[3])) {
+                int id = Integer.parseInt(parts[2]);
+                handleReport(exchange, method, id);
                 return;
             }
         }
@@ -647,6 +656,88 @@ public class StudentController implements HttpHandler {
 
         } catch (IOException exception) {
             sendError(exchange, 503, "Prediction service is unavailable");
+        }
+    }
+
+
+    private void handleReport(
+            HttpExchange exchange,
+            String method,
+            int id) throws IOException {
+
+        if (!"GET".equals(method)) {
+            sendError(exchange, 405, "Method not allowed");
+            return;
+        }
+
+        ReportFormat format;
+
+        try {
+            format = ReportFormat.from(
+                    queryParameter(exchange.getRequestURI().getQuery(), "format"));
+        } catch (IllegalArgumentException exception) {
+            sendError(exchange, 400, exception.getMessage());
+            return;
+        }
+
+        Student student = service.getStudent(id);
+
+        if (student == null) {
+            sendError(exchange, 404, "Student not found");
+            return;
+        }
+
+        try {
+            ReportResult result = reportService.generateStudentReport(id, format);
+
+            if (result == null) {
+                sendError(exchange, 404, "Student not found");
+                return;
+            }
+
+            sendReport(exchange, result);
+
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            sendError(exchange, 503, "Report service is unavailable");
+
+        } catch (IOException exception) {
+            sendError(exchange, 503, "Report service is unavailable");
+        }
+    }
+
+
+    private String queryParameter(String query, String name) {
+        if (query == null) {
+            return null;
+        }
+
+        for (String pair : query.split("&")) {
+            String[] parts = pair.split("=", 2);
+
+            if (parts.length == 2 && name.equals(parts[0])) {
+                return URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+            }
+        }
+
+        return null;
+    }
+
+
+    private void sendReport(HttpExchange exchange, ReportResult result)
+            throws IOException {
+
+        byte[] body = result.getContent().getBytes(StandardCharsets.UTF_8);
+
+        exchange.getResponseHeaders().set("Content-Type", result.getMediaType());
+        exchange.getResponseHeaders().set(
+                "Content-Disposition",
+                "attachment; filename=\"" + result.getFilename() + "\"");
+
+        exchange.sendResponseHeaders(200, body.length);
+
+        try (OutputStream output = exchange.getResponseBody()) {
+            output.write(body);
         }
     }
 

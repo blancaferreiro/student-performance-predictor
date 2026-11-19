@@ -66,7 +66,13 @@ Content-Type: application/json
     "name": "Ana",
     "studyHours": 5,
     "enrollments": [
-        { "subjectId": 1, "studyHours": 12 }
+        {
+            "subjectId": 1,
+            "studyHours": 12,
+            "course": "1º",
+            "academicYear": "2025-2026",
+            "grade": 8.5
+        }
     ]
 }
 
@@ -74,3 +80,33 @@ Content-Type: application/json
 
 ### Predict student performance for one subject
 GET http://localhost:8080/students/1/subjects/1/prediction
+
+###
+
+### Download student report as CSV
+GET http://localhost:8080/students/1/report?format=csv
+
+###
+
+### Download student report as JSON
+GET http://localhost:8080/students/1/report?format=json
+
+###
+
+### Call the report service directly
+POST http://localhost:8001/reports/csv
+Content-Type: application/json
+
+{
+    "student": 1,
+    "name": "Ana",
+    "academic_year": "2025-2026",
+    "records": [
+        {
+            "subject": "Algoritmos",
+            "course": "1º",
+            "academic_year": "2025-2026",
+            "score": 8.5
+        }
+    ]
+}

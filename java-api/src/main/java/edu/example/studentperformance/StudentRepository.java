@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,7 +148,8 @@ public class StudentRepository {
     private void loadEnrollments(Connection connection, Student student)
             throws SQLException {
 
-        String sql = "SELECT subject_id, study_hours FROM enrollments WHERE student_id = ?";
+        String sql = "SELECT subject_id, study_hours, course, academic_year, grade "
+                + "FROM enrollments WHERE student_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, student.getId());
@@ -156,9 +158,14 @@ public class StudentRepository {
                 List<Enrollment> enrollments = new ArrayList<>();
 
                 while (rows.next()) {
+                    Object gradeValue = rows.getObject("grade");
+
                     enrollments.add(new Enrollment(
                             rows.getLong("subject_id"),
-                            rows.getDouble("study_hours")
+                            rows.getDouble("study_hours"),
+                            rows.getString("course"),
+                            rows.getString("academic_year"),
+                            gradeValue == null ? null : rows.getDouble("grade")
                     ));
                 }
 
@@ -171,8 +178,9 @@ public class StudentRepository {
             throws SQLException {
 
         String deleteSql = "DELETE FROM enrollments WHERE student_id = ?";
-        String insertSql = "INSERT INTO enrollments (student_id, subject_id, study_hours) "
-                + "VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO enrollments "
+                + "(student_id, subject_id, study_hours, course, academic_year, grade) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
             deleteStatement.setInt(1, student.getId());
@@ -184,6 +192,15 @@ public class StudentRepository {
                 insertStatement.setInt(1, student.getId());
                 insertStatement.setLong(2, enrollment.getSubjectId());
                 insertStatement.setDouble(3, enrollment.getStudyHours());
+                insertStatement.setString(4, enrollment.getCourse());
+                insertStatement.setString(5, enrollment.getAcademicYear());
+
+                if (enrollment.getGrade() == null) {
+                    insertStatement.setNull(6, Types.DOUBLE);
+                } else {
+                    insertStatement.setDouble(6, enrollment.getGrade());
+                }
+
                 insertStatement.addBatch();
             }
 

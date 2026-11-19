@@ -151,6 +151,12 @@ public class StudentService {
                 return false;
             }
 
+            Double grade = enrollment.getGrade();
+            if (grade != null
+                    && (!Double.isFinite(grade) || grade < 0 || grade > 10)) {
+                return false;
+            }
+
             if (!subjectIds.add(subjectId)) {
                 return false;
             }
