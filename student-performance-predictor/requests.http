@@ -1,0 +1,76 @@
+
+### List all students
+GET http://localhost:8080/students
+
+###
+
+### Create a student
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+    "name": "Ana",
+    "studyHours": 5
+}
+
+###
+
+### Get a student
+GET http://localhost:8080/students/1
+
+###
+
+### Update a student
+PUT http://localhost:8080/students/1
+Content-Type: application/json
+
+{
+    "name": "Ana",
+    "studyHours": 8
+}
+
+###
+
+### Delete a student
+DELETE http://localhost:8080/students/1
+
+###
+
+### Predict student performance
+GET http://localhost:8080/students/1/prediction
+
+
+###
+
+### List subjects
+GET http://localhost:8080/api/subjects
+
+###
+
+### Create a subject
+POST http://localhost:8080/api/subjects
+Content-Type: application/json
+
+{
+    "name": "Algoritmos",
+    "difficulty": "MEDIUM"
+}
+
+###
+
+### Create a student enrolled in subject 1
+POST http://localhost:8080/students
+Content-Type: application/json
+
+{
+    "name": "Ana",
+    "studyHours": 5,
+    "enrollments": [
+        { "subjectId": 1, "studyHours": 12 }
+    ]
+}
+
+###
+
+### Predict student performance for one subject
+GET http://localhost:8080/students/1/subjects/1/prediction
