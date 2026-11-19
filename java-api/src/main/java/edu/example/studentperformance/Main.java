@@ -1,3 +1,4 @@
+
 package edu.example.studentperformance;
 
 import com.sun.net.httpserver.HttpServer;
@@ -13,26 +14,28 @@ public class Main {
 
         Database.init();
 
-        // Las dependencias se conectan de forma explícita para mostrar la relación entre capas.
+        AppConfig config = AppConfig.getInstance();
+        
+
+        // Creamos los repositorios
         StudentRepository repository = new StudentRepository();
         SubjectRepository subjectRepository = new SubjectRepository();
 
-        // en desarrollo local se utiliza localhost.
-        String predictionServiceUrl = System.getenv("PYTHON_SERVICE_URL");
-        if (predictionServiceUrl == null) {
-            predictionServiceUrl = "http://localhost:8000";
-        } else if (predictionServiceUrl.isBlank()) {
-            predictionServiceUrl = "http://localhost:8000";
-        }
-        PredictionClient predictionClient = new PredictionClient(predictionServiceUrl);
-        StudentService service = new StudentService(repository, predictionClient, subjectRepository);
-        
+        PredictionClient predictionClient = new PredictionClient(
+            config.getPredictionServiceUrl()
+        );
+
+        StudentService service = new StudentService(
+            repository,
+            predictionClient,
+            subjectRepository
+        );
+
         StudentController controller = new StudentController(service);
 
         SubjectService subjectService = new SubjectService(subjectRepository);
         SubjectController subjectController = new SubjectController(subjectService);
 
-        
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/students", controller);
         server.createContext("/api/subjects", subjectController);
