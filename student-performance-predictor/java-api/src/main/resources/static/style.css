@@ -1,89 +1,361 @@
+/* Tipografías: si no hay conexión, el navegador usa las de reserva. */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap");
+
+/* ---------- Colores y tipografía (cámbialos aquí) ---------- */
 :root {
-    color: #17324d;
-    background: #eef3f7;
-    font-family: Arial, sans-serif;
+    --chalk: #1f4d3d;        /* verde pizarra */
+    --chalk-deep: #163a2e;
+    --pencil: #f4b630;       /* amarillo lápiz */
+    --page: #e9eee8;
+    --paper: #ffffff;
+    --ink: #1c2a24;
+    --muted: #5d6b63;
+    --line: #d5dcd2;
+    --field: #bcc7bb;
+    --ok: #1f6b4a;
+    --ok-bg: #e3f1e8;
+    --danger: #b3382c;
+
+    --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+    --font-head: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+
+    color: var(--ink);
+    background: var(--page);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
     margin: 0;
 }
 
-main {
-    width: min(900px, 92%);
-    margin: 40px auto;
+/* ---------- Cabecera tipo pizarra ---------- */
+.site-header {
+    padding: 44px 0 76px;
+    background: var(--chalk);
+    border-bottom: 5px solid var(--pencil);
 }
 
-h1, h2 {
-    color: #123b5d;
+.site-header .inner {
+    width: min(860px, 92%);
+    margin: 0 auto;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-head);
+    line-height: 1.15;
+}
+
+h1 {
+    margin: 0 0 10px;
+    color: #fff;
+    font-size: clamp(1.9rem, 4.5vw, 2.7rem);
+    letter-spacing: -0.01em;
 }
 
 .introduction {
-    margin-bottom: 28px;
+    max-width: 56ch;
+    margin: 0 0 20px;
+    color: rgb(255 255 255 / 82%);
+}
+
+.header-link {
+    display: inline-block;
+    padding: 7px 16px;
+    border: 1px solid rgb(255 255 255 / 40%);
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.header-link:hover,
+.header-link:focus-visible {
+    background: var(--pencil);
+    border-color: var(--pencil);
+    color: var(--ink);
+}
+
+/* ---------- Contenido ---------- */
+main {
+    position: relative;
+    width: min(860px, 92%);
+    margin: -44px auto 0;
+    padding-bottom: 64px;
 }
 
 .panel {
     margin-bottom: 24px;
-    padding: 24px;
-    border-radius: 8px;
-    background: white;
-    box-shadow: 0 2px 8px rgb(20 50 75 / 10%);
+    padding: 28px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+    box-shadow: 0 1px 0 rgb(28 42 36 / 6%);
 }
 
+.panel h2 {
+    margin: 0 0 18px;
+    font-size: 1.35rem;
+}
+
+/* ---------- Formularios ---------- */
 form {
     display: grid;
-    gap: 10px;
+    gap: 6px;
+}
+
+form > label {
+    margin-top: 10px;
+    font-weight: 600;
+    font-size: 0.92rem;
 }
 
 input, select {
-    max-width: 360px;
-    padding: 9px;
-    border: 1px solid #9fb2c3;
-    border-radius: 4px;
+    width: 100%;
+    max-width: 420px;
+    padding: 10px 12px;
+    border: 1px solid var(--field);
+    border-radius: 8px;
+    background: #fcfdfb;
+    color: var(--ink);
+    font: inherit;
 }
 
+input:focus-visible,
+select:focus-visible {
+    border-color: var(--chalk);
+    outline: 3px solid rgb(244 182 48 / 55%);
+    outline-offset: 0;
+}
+
+input:disabled {
+    background: #eef1ec;
+    opacity: 0.6;
+}
+
+form h3 {
+    margin: 22px 0 0;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 1.1rem;
+}
+
+form h3 + p {
+    margin: 0 0 4px;
+    color: var(--muted);
+}
+
+/* Lista de asignaturas con casillas */
+#subject-checkboxes {
+    display: grid;
+    gap: 8px;
+}
+
+.enrollment-item {
+    display: grid;
+    grid-template-columns: auto 1fr minmax(120px, 170px);
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f8faf6;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.enrollment-item:has(input[type="checkbox"]:checked) {
+    border-color: var(--chalk);
+    background: #eef6f0;
+}
+
+.enrollment-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--chalk);
+}
+
+.enrollment-item label {
+    margin: 0;
+    font-weight: 500;
+}
+
+.enrollment-item input[type="number"] {
+    max-width: none;
+}
+
+/* ---------- Botones ---------- */
 button {
-    padding: 8px 12px;
-    border: 0;
-    border-radius: 4px;
-    color: white;
-    background: #1769aa;
+    padding: 10px 18px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: var(--chalk);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
     cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+button:hover {
+    background: var(--chalk-deep);
+}
+
+button:focus-visible {
+    outline: 3px solid rgb(244 182 48 / 70%);
+    outline-offset: 2px;
 }
 
 button.secondary {
-    color: #17324d;
-    background: #dce6ee;
+    border-color: var(--field);
+    background: transparent;
+    color: var(--ink);
 }
 
-.form-actions, .student-actions {
+button.secondary:hover {
+    background: #eef1ec;
+}
+
+.form-actions,
+.student-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 14px;
 }
 
+/* ---------- Lista de estudiantes y asignaturas ---------- */
 .student-card {
-    padding: 14px 0;
-    border-bottom: 1px solid #dce6ee;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.student-card:first-child {
+    padding-top: 0;
 }
 
 .student-card:last-child {
+    padding-bottom: 0;
     border-bottom: 0;
+}
+
+.student-card strong {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
 }
 
 .student-card p {
     margin: 4px 0;
 }
 
-.prediction {
-    color: #167044;
-    font-weight: bold;
+.student-card h4 {
+    margin: 16px 0 6px;
+    color: var(--muted);
+    font-size: 0.95rem;
 }
 
-.error {
-    color: #a32424;
+/* Botón "Predict grade" de cada matrícula */
+.student-card > button {
+    margin: 2px 0 6px;
+    padding: 5px 12px;
+    border-color: var(--field);
+    background: transparent;
+    color: var(--ink);
+    font-size: 0.88rem;
+}
+
+.student-card > button:hover {
+    background: #eef1ec;
+}
+
+/* Botones del estudiante: Edit, Delete y Predict general grade */
+.student-actions {
+    padding-top: 16px;
+    border-top: 1px dashed var(--line);
+}
+
+.student-actions button:nth-child(1) {
+    border-color: var(--field);
+    background: transparent;
+    color: var(--ink);
+}
+
+.student-actions button:nth-child(1):hover {
+    background: #eef1ec;
+}
+
+.student-actions button:nth-child(2) {
+    border-color: #e3b9b4;
+    background: transparent;
+    color: var(--danger);
+}
+
+.student-actions button:nth-child(2):hover {
+    background: #fbeceb;
+}
+
+/* Resultado de la predicción */
+.prediction {
+    width: fit-content;
+    margin: 4px 0 8px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: var(--ok-bg);
+    color: var(--ok);
+    font-weight: 600;
+}
+
+.prediction:empty {
+    display: none;
+}
+
+/* ---------- Mensajes ---------- */
+#message {
+    margin: 16px 0 0;
+    color: var(--ok);
+    font-weight: 600;
+}
+
+#message:empty {
+    display: none;
+}
+
+.error,
+#message.error {
+    color: var(--danger);
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+/* ---------- Móvil ---------- */
+@media (max-width: 560px) {
+    .site-header {
+        padding: 32px 0 64px;
+    }
+
+    .panel {
+        padding: 20px;
+    }
+
+    .enrollment-item {
+        grid-template-columns: auto 1fr;
+    }
+
+    .enrollment-item input[type="number"] {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition: none !important;
+    }
 }
