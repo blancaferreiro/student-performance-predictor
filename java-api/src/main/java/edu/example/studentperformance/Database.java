@@ -11,15 +11,17 @@ import java.sql.Statement;
  * por defecto permiten ejecutar con "mvn compile exec:java" en local.
  */
 public final class Database {
-    private static final String URL = env("DB_URL", "jdbc:mysql://localhost:3306/studentdb");
-    private static final String USER = env("DB_USER", "app");
-    private static final String PASSWORD = env("DB_PASSWORD", "app");
+    private static final AppConfig CONFIG = AppConfig.getInstance();
 
     private Database() {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return DriverManager.getConnection(
+            CONFIG.getDatabaseUrl(),
+            CONFIG.getDatabaseUser(),
+            CONFIG.getDatabasePassword()
+        );
     }
 
     /**
@@ -69,11 +71,4 @@ public final class Database {
         throw new IllegalStateException("Could not connect to MySQL", lastError);
     }
 
-    private static String env(String name, String defaultValue) {
-        String value = System.getenv(name);
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-        return value;
-    }
 }
