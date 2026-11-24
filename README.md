@@ -1,146 +1,209 @@
-# Predictor del rendimiento de estudiantes
+# Student Performance Predictor
 
-Student Performance Predictor es un ejemplo para aprender arquitectura de software en el aula. Un navegador utiliza una API HTTP en Java para gestionar estudiantes, la API almacena los estudiantes en memoria y coordina las peticiones, y un servicio independiente en Python calcula una nota prevista ficticia. Este diseño deliberadamente pequeño permite observar las responsabilidades de presentación, negocio, almacenamiento y servicios externos sin introducir infraestructura de producción.
+Aplicación académica para gestionar estudiantes, asignaturas, cursos académicos y matrículas, y consultar predicciones didácticas de notas.
 
-## Arquitectura
+> **Aviso:** las notas predichas son ficticias y se utilizan únicamente con fines docentes. No proceden de un modelo entrenado ni deben utilizarse para evaluar el rendimiento real de una persona.
+
+## 1. Arquitectura
+
+La aplicación está compuesta por tres servicios:
 
 ```text
-Navegador (HTML, CSS, JavaScript)
-            |
-            | HTTP en el puerto 8080
-            v
-API Java (HttpServer y HashMap)
-            |
-            | POST /predict en el puerto 8000
-            v
-API de predicción en Python (FastAPI)
+Navegador (HTML, CSS y JavaScript)
+              |
+              | HTTP :8080
+              v
+       API Java (backend)
+          |          |
+          |          +------> MySQL 8.4 (persistencia)
+          |
+          | HTTP :8000
+          v
+    API Python (FastAPI)
 ```
 
-El navegador se comunica únicamente con Java. Java también sirve el frontend, por lo que el ejemplo utiliza un único origen en el navegador y no necesita configuración CORS. Gson es la única dependencia de Java; Maven la descarga y proporciona comandos reproducibles para compilar y ejecutar el proyecto, pero Maven no forma parte de la lección.
+- **Frontend:** HTML, CSS y JavaScript servido por la API Java.
+- **Backend Java:** API HTTP, controladores, servicios, repositorios y reglas de negocio.
+- **MySQL:** almacena estudiantes, asignaturas, cursos y matrículas.
+- **Python/FastAPI:** servicio independiente que calcula la predicción didáctica.
+- **Docker Compose:** inicia los tres servicios y configura su comunicación.
 
-## Requisitos previos
+## 2. Requisitos
 
-- JDK 21 o posterior
-- Maven 3.9 o posterior
-- Python 3.11 o posterior
+Para ejecutar el proyecto de la forma recomendada:
 
-## Ejecución en línea de comandos
+- Docker Desktop instalado y abierto (Mac o Windows), o Docker Engine con Docker Compose.
+- Git, si se va a trabajar con el repositorio compartido.
+- Un navegador web actualizado.
 
-Abre la carpeta del repositorio. Después, abre dos terminales.
+No es necesario instalar Java, Maven, Python ni MySQL localmente si se utiliza Docker Compose.
 
-En la primera terminal, inicia Python. Los siguientes comandos de PowerShell funcionan en Windows:
+## 3. Arrancar el proyecto
 
-```powershell
-cd python-api
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8000
-```
-
-En macOS o Linux, activa el entorno con:
+1. Descomprimir el ZIP.
+2. Abrir la carpeta `student-performance-predictor-dev-aitor` en VS Code o en una terminal.
+3. Asegurarse de que Docker Desktop está iniciado.
+4. Desde la carpeta raíz, donde está `compose.yaml`, ejecutar:
 
 ```bash
-cd python-api
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-python -m uvicorn app.main:app --reload --port 8000
+docker compose up -d --build
 ```
 
-En la segunda terminal, inicia Java:
+La primera ejecución puede tardar unos minutos mientras Docker descarga imágenes y construye los servicios.
 
-```text
-cd java-api
-mvn compile exec:java
+Comprobar el estado:
+
+```bash
+docker compose ps
 ```
 
-Abre estas direcciones:
+La base de datos MySQL debe aparecer como `healthy`; los servicios Java y Python deben estar iniciados.
+
+Abrir la aplicación en el navegador:
 
 - Aplicación web: <http://localhost:8080>
-- Documentación interactiva de la API de Python: <http://localhost:8000/docs>
+- Gestión de asignaturas: <http://localhost:8080/subjects>
+- Gestión de cursos: <http://localhost:8080/courses>
+- Documentación de FastAPI: <http://localhost:8000/docs>
 
-Los datos de los estudiantes se almacenan únicamente en memoria y se eliminan cada vez que se detiene el proceso de Java.
+## 4. Detener y volver a iniciar
 
-## Ejecución con Docker Compose
+Detener los contenedores sin borrar los datos de MySQL:
 
-Como alternativa a la ejecución manual, puedes construir e iniciar los servicios de Java y Python desde la raíz del repositorio:
-
-```text
-docker compose up --build
-```
-
-Abre la aplicación en <http://localhost:8080>. La documentación interactiva del servicio de Python continúa disponible en <http://localhost:8000/docs>. Dentro de Docker, Java utiliza el nombre de servicio `python-service` para comunicarse con Python.
-
-Para detener y eliminar los contenedores:
-
-```text
+```bash
 docker compose down
 ```
 
-Después de modificar el código o las dependencias, vuelve a construir las imágenes con:
-
-```text
-docker compose up --build
-```
-
-## Ejemplos de la API
-
-PowerShell:
-
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8080/students -ContentType "application/json" -Body '{"name":"Ana","studyHours":5}'
-Invoke-RestMethod -Uri http://localhost:8080/students
-Invoke-RestMethod -Uri http://localhost:8080/students/1/prediction
-Invoke-RestMethod -Method Put -Uri http://localhost:8080/students/1 -ContentType "application/json" -Body '{"name":"Ana","studyHours":6}'
-Invoke-RestMethod -Method Delete -Uri http://localhost:8080/students/1
-```
-
-Bash:
+Volver a iniciar:
 
 ```bash
-curl -X POST http://localhost:8080/students -H 'Content-Type: application/json' -d '{"name":"Ana","studyHours":5}'
-curl http://localhost:8080/students
-curl http://localhost:8080/students/1/prediction
-curl -X PUT http://localhost:8080/students/1 -H 'Content-Type: application/json' -d '{"name":"Ana","studyHours":6}'
-curl -X DELETE http://localhost:8080/students/1
+docker compose up -d
 ```
 
-Para llamar directamente a Python mientras se explica la separación entre servicios:
+Reconstruir las imágenes después de modificar código:
 
-```powershell
-Invoke-RestMethod -Method Post -Uri http://localhost:8000/predict -ContentType "application/json" -Body '{"study_hours":5}'
+```bash
+docker compose up -d --build
 ```
 
-El resultado es `7.5`. Se obtiene mediante la fórmula didáctica ficticia `min(10, study_hours * 1.5)` y no procede de un modelo entrenado ni constituye una predicción científicamente válida.
+> **Importante sobre los datos:** MySQL utiliza el volumen persistente `mysql-data`. `docker compose down` conserva ese volumen. No ejecutar `docker compose down -v` salvo que se quieran borrar también los datos de la base de datos.
 
-## Puntos de control didácticos
+## 5. Funcionalidades de matrículas (HU-02)
 
-1. **REST básico:** comienza con `Student`, un `HttpServer` de Java, un `HashMap` y las operaciones de colección `GET /students` y `POST /students`. Utiliza los ejemplos de la API para explicar JSON, los métodos HTTP y los códigos de estado.
-2. **Capas y CRUD:** separa `StudentController`, `StudentService` y `StudentRepository`; añade las operaciones de consulta, actualización y eliminación, junto con la interfaz HTML. El controlador contiene la lógica de presentación, el servicio mantiene las reglas de negocio y el repositorio es responsable del almacenamiento. Esto se parece a algunas ideas de MVC, pero una API HTTP no proporciona automáticamente una vista MVC tradicional.
-3. **Servicios y predicción:** ejecuta FastAPI de forma independiente, llámala mediante `PredictionClient` y expone `GET /students/{id}/prediction`. Detén Python y repite una predicción para mostrar la respuesta `503` de Java. Dos programas que se comunican demuestran la descomposición en servicios, pero no todas las propiedades operativas de un sistema de microservicios de producción.
+Cada matrícula relaciona un estudiante, una asignatura y un curso académico, e incluye:
 
+- Horas de estudio (valor igual o superior a cero).
+- Nota opcional, entre 0 y 10.
+- Posibilidad de matricular al mismo estudiante en la misma asignatura en cursos académicos diferentes.
+- Conservación de las matrículas históricas al actualizar un estudiante sin volver a enviar todas sus matrículas.
+- Conservación de una nota existente cuando una actualización envía `grade: null`.
+- Actualización de la nota cuando se envía una nueva calificación válida.
+- Predicción por matrícula, identificando estudiante, asignatura y curso académico.
 
-![Flujo de funcionamiento](flujo.png)
+La clave primaria de la tabla `enrollments` es la combinación `(student_id, subject_id, course_id)`. Por ello, no se permiten dos matrículas de la misma asignatura para el mismo estudiante dentro del mismo curso, pero sí en cursos diferentes.
 
-El repositorio mantiene una única versión final del código en lugar de tres carpetas duplicadas. Utiliza commits o etiquetas de Git para conservar estos puntos de control durante una secuencia didáctica en directo.
+## 6. Rutas principales de la API
 
-## Contrato REST
+### Estudiantes
 
-| Método | Ruta | Estado correcto | Propósito |
-| --- | --- | --- | --- |
-| GET | `/students` | `200` | Listar estudiantes |
-| GET | `/students/{id}` | `200` | Consultar un estudiante |
-| POST | `/students` | `201` | Crear un estudiante |
-| PUT | `/students/{id}` | `200` | Actualizar un estudiante |
-| DELETE | `/students/{id}` | `204` | Eliminar un estudiante |
-| GET | `/students/{id}/prediction` | `200` | Solicitar una predicción ficticia |
-| POST | `/predict` de Python | `200` | Calcular una predicción ficticia |
-| GET | `/api/subjects` | `200` | Listar asignaturas |
-| POST | `/api/subjects` | `201` | Crear una asignatura (`name`, `difficulty`: `EASY`, `MEDIUM` o `HARD`) |
-| GET | `/students/{id}/subjects/{subjectId}/prediction` | `200` | Predicción según las horas de la matrícula y la dificultad |
-| GET | `/subjects` | `200` | Vista web de gestión de asignaturas |
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/students` | Listar estudiantes con sus matrículas |
+| GET | `/students/{id}` | Consultar un estudiante |
+| POST | `/students` | Crear un estudiante |
+| PUT | `/students/{id}` | Actualizar un estudiante y añadir/actualizar matrículas |
+| DELETE | `/students/{id}` | Eliminar un estudiante |
+| GET | `/students/{id}/prediction` | Predicción general del estudiante |
+| GET | `/students/{id}/subjects/{subjectId}/courses/{courseId}/prediction` | Predicción de una matrícula concreta |
 
-Java devuelve `400` cuando la entrada no es válida, `404` para un estudiante o una ruta desconocidos, `405` para un método no permitido y `503` cuando el servicio de Python no está disponible.
+Ejemplo de cuerpo JSON para crear un estudiante con una matrícula:
 
+```json
+{
+  "name": "Ana",
+  "studyHours": 5,
+  "enrollments": [
+    {
+      "subjectId": 1,
+      "courseId": 1,
+      "studyHours": 12,
+      "grade": 7.5
+    }
+  ]
+}
+```
 
+Para una matrícula todavía sin calificación, enviar `"grade": null`.
+
+### Asignaturas y cursos
+
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/api/subjects` | Listar asignaturas |
+| POST | `/api/subjects` | Crear asignatura |
+| GET | `/api/courses` | Listar cursos académicos |
+| POST | `/api/courses` | Crear curso académico |
+
+Las interfaces de gestión están disponibles en `/subjects` y `/courses`.
+
+## 7. Configuración de Docker y base de datos
+
+La configuración de desarrollo se encuentra en `compose.yaml`.
+
+- Java API: puerto `8080`.
+- Python API: puerto `8000`.
+- MySQL: puerto `3306`.
+- Base de datos: `studentdb`.
+- Usuario de aplicación: `app`.
+
+Las credenciales incluidas en `compose.yaml` son valores locales de desarrollo. No deben reutilizarse en un despliegue público o de producción.
+
+La aplicación crea las tablas al arrancar si todavía no existen. Esta inicialización crea tablas nuevas; no es un sistema de migraciones para transformar automáticamente una base de datos antigua con otro esquema. Para una instalación limpia, se puede iniciar con un volumen MySQL nuevo.
+
+## 8. Solución de problemas
+
+**No se abre `localhost:8080`:**
+
+1. Comprobar que Docker Desktop está iniciado.
+2. Ejecutar `docker compose ps` desde la carpeta raíz.
+3. Consultar los registros con:
+
+```bash
+docker compose logs --tail=100 java-api
+docker compose logs --tail=100 mysql
+docker compose logs --tail=100 python-service
+```
+
+**Se ha modificado código y no aparecen los cambios:**
+
+```bash
+docker compose up -d --build
+```
+
+Después, recargar el navegador sin caché (Cmd + Shift + R en Mac; Ctrl + Shift + R en Windows/Linux).
+
+**MySQL no está listo:** esperar a que `docker compose ps` indique `healthy` para el servicio `mysql`. La API Java espera a que la base de datos esté saludable antes de arrancar.
+
+## 9. Estructura del proyecto
+
+```text
+student-performance-predictor-dev-aitor/
+├── compose.yaml
+├── README.md
+├── requests.http
+├── flujo.png
+├── java-api/
+│   ├── Dockerfile
+│   ├── pom.xml
+│   └── src/main/
+│       ├── java/edu/example/studentperformance/
+│       └── resources/static/
+└── python-api/
+    ├── Dockerfile
+    ├── requirements.txt
+    └── app/
+```
+
+## 10. Trabajo en equipo
+
+Cada compañero puede descomprimir el proyecto, abrir la carpeta raíz y ejecutar Docker Compose siguiendo el apartado 3. Para compartir cambios de código, utilizar la rama Git acordada por el equipo y realizar commits antes de integrar cambios.
