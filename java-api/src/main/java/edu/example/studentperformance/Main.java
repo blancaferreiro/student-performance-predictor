@@ -63,10 +63,13 @@ public class Main {
                 new InetSocketAddress(8080), 0
         );
 
+        CourseService courseService = new CourseService(courseRepository);
+        CourseController courseController = new CourseController(courseService);
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
         server.createContext("/students", controller);
         server.createContext("/api/subjects", subjectController);
         server.createContext("/api/courses", courseController);
-
         server.createContext("/subjects", new StaticFileHandler());
         server.createContext("/courses", new StaticFileHandler());
         server.createContext("/", new StaticFileHandler());

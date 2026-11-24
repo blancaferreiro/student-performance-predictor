@@ -52,17 +52,20 @@ public final class Database {
                 );
 
                 statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS enrollments (" +
-                    "student_id INT NOT NULL, " +
-                    "subject_id INT NOT NULL, " +
-                    "course_id INT NOT NULL, " +
-                    "study_hours DOUBLE NOT NULL CHECK (study_hours >= 0), " +
-                    "grade DOUBLE NULL CHECK (grade IS NULL OR (grade >= 0 AND grade <= 10)), " +
-                    "PRIMARY KEY (student_id, subject_id, course_id), " +
-                    "FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE, " +
-                    "FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE RESTRICT)"
-                );
+                    "CREATE TABLE IF NOT EXISTS courses ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "name VARCHAR(100) NOT NULL UNIQUE, "
+                    + "start_date DATE NOT NULL, "
+                    + "end_date DATE NOT NULL)");
+
+                statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS enrollments ("
+                    + "student_id INT NOT NULL, "
+                    + "subject_id INT NOT NULL, "
+                    + "study_hours DOUBLE NOT NULL CHECK (study_hours >= 0), "
+                    + "PRIMARY KEY (student_id, subject_id), "
+                    + "FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE, "
+                    + "FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE)");
 
                 System.out.println("Database ready.");
                 return;
