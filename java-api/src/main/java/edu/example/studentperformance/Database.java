@@ -45,6 +45,13 @@ public final class Database {
                     + "difficulty ENUM('EASY','MEDIUM','HARD') NOT NULL)");
 
                 statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS courses ("
+                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
+                    + "name VARCHAR(100) NOT NULL UNIQUE, "
+                    + "start_date DATE NOT NULL, "
+                    + "end_date DATE NOT NULL)");
+
+                statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS enrollments ("
                     + "student_id INT NOT NULL, "
                     + "subject_id INT NOT NULL, "
