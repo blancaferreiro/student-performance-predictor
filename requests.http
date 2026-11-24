@@ -48,7 +48,7 @@ GET http://localhost:8080/api/subjects
 ###
 
 ### Create a subject
-POST http://localhost:8080/api/subjects
+POST http://localhost:80£80/api/subjects
 Content-Type: application/json
 
 {

@@ -116,7 +116,9 @@ public class StudentRepository {
                 }
 
                 student.setId(id);
+
                 saveEnrollments(connection, student);
+
                 connection.commit();
 
                 return student;
@@ -145,6 +147,9 @@ public class StudentRepository {
         }
     }
 
+    /**
+     * Recupera todas las matrículas históricas de un estudiante.
+     */
     private void loadEnrollments(Connection connection, Student student)
             throws SQLException {
 
@@ -174,6 +179,11 @@ public class StudentRepository {
         }
     }
 
+    /**
+     * Inserta las matrículas nuevas o actualiza las existentes.
+     * No elimina las matrículas históricas.
+     * Si la nota recibida es null, conserva la nota anterior.
+     */
     private void saveEnrollments(Connection connection, Student student)
             throws SQLException {
 
@@ -182,12 +192,8 @@ public class StudentRepository {
                 + "(student_id, subject_id, study_hours, course, academic_year, grade) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
-            deleteStatement.setInt(1, student.getId());
-            deleteStatement.executeUpdate();
-        }
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
-        try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
             for (Enrollment enrollment : student.getEnrollments()) {
                 insertStatement.setInt(1, student.getId());
                 insertStatement.setLong(2, enrollment.getSubjectId());
@@ -204,7 +210,7 @@ public class StudentRepository {
                 insertStatement.addBatch();
             }
 
-            insertStatement.executeBatch();
+            statement.executeBatch();
         }
     }
 

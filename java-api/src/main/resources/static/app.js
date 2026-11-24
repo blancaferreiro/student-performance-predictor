@@ -5,25 +5,26 @@ const nameInput = document.getElementById("student-name");
 const studyHoursInput = document.getElementById("study-hours");
 const formTitle = document.getElementById("form-title");
 const cancelEditButton = document.getElementById("cancel-edit");
+const addEnrollmentButton = document.getElementById("add-enrollment");
 const studentList = document.getElementById("student-list");
 const message = document.getElementById("message");
-
-const subjectCheckboxes = document.getElementById("subject-checkboxes");
-const enrollmentList = document.getElementById("enrollment-list");
+const enrollmentContainer = document.getElementById("subject-checkboxes");
 
 let currentStudents = [];
 let currentSubjects = [];
+let currentCourses = [];
 let currentEnrollments = [];
 const DIFFICULTY_LABELS = { EASY: "Fácil", MEDIUM: "Media", HARD: "Difícil" };
 
 form.addEventListener("submit", saveStudent);
 cancelEditButton.addEventListener("click", resetForm);
-
+addEnrollmentButton.addEventListener("click", addEnrollment);
 
 async function initializePage() {
     await loadSubjects();
+    await loadCourses();
     await loadStudents();
-    renderSubjectCheckboxes();
+    renderEnrollmentRows();
 }
 
 initializePage();
@@ -32,7 +33,6 @@ initializePage();
 // ========================================
 // CARGAR ASIGNATURAS
 // ========================================
-
 
 async function loadSubjects() {
     try {
@@ -44,8 +44,6 @@ async function loadSubjects() {
 
         currentSubjects = await response.json();
 
-        renderSubjectCheckboxes();
-
     } catch (error) {
         showMessage("Could not load subjects.", true);
     }
@@ -53,30 +51,127 @@ async function loadSubjects() {
 
 
 // ========================================
-// MOSTRAR ASIGNATURAS CON CHECKBOXES
+// CARGAR CURSOS
 // ========================================
 
-function renderSubjectCheckboxes() {
-    subjectCheckboxes.replaceChildren();
+async function loadCourses() {
+    try {
+        const response = await fetch("/api/courses");
 
-    currentSubjects.forEach(subject => {
-        const enrollment = currentEnrollments.find(
-            item => Number(item.subjectId) === Number(subject.id)
-        );
+        if (!response.ok) {
+            throw new Error("Could not load courses");
+        }
 
+        currentCourses = await response.json();
+
+    } catch (error) {
+        showMessage("Could not load academic courses.", true);
+    }
+}
+
+
+// ========================================
+// AÑADIR UNA MATRÍCULA
+// ========================================
+
+function addEnrollment() {
+    if (currentSubjects.length === 0) {
+        showMessage("Create a subject before adding an enrollment.", true);
+        return;
+    }
+
+    if (currentCourses.length === 0) {
+        showMessage("Create an academic course before adding an enrollment.", true);
+        return;
+    }
+
+    currentEnrollments.push({
+        subjectId: currentSubjects[0].id,
+        courseId: currentCourses[0].id,
+        studyHours: "",
+        grade: ""
+    });
+
+    renderEnrollmentRows();
+}
+
+
+// ========================================
+// MOSTRAR LOS CAMPOS DE MATRÍCULA
+// ========================================
+
+function renderEnrollmentRows() {
+    enrollmentContainer.replaceChildren();
+
+    if (currentEnrollments.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No enrollments added yet.";
+        enrollmentContainer.appendChild(empty);
+        return;
+    }
+
+    currentEnrollments.forEach((enrollment, index) => {
         const row = document.createElement("div");
         row.className = "enrollment-item";
 
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.id = "subject-" + subject.id;
-        checkbox.checked = Boolean(enrollment);
+        const content = document.createElement("div");
+        content.style.display = "flex";
+        content.style.flexDirection = "column";
+        content.style.gap = "0.5rem";
+        content.style.width = "100%";
 
-        const label = document.createElement("label");
-        label.htmlFor = checkbox.id;
-        label.textContent =
-            subject.name + " (" +
-            (DIFFICULTY_LABELS[subject.difficulty] || subject.difficulty) + ")";
+        const title = document.createElement("strong");
+        title.textContent = "Enrollment " + (index + 1);
+
+        const subjectLabel = document.createElement("label");
+        subjectLabel.textContent = "Subject";
+
+        const subjectSelect = document.createElement("select");
+
+        currentSubjects.forEach(subject => {
+            const option = document.createElement("option");
+            option.value = subject.id;
+            option.textContent =
+                subject.name + " (" +
+                (DIFFICULTY_LABELS[subject.difficulty] || subject.difficulty) +
+                ")";
+            subjectSelect.appendChild(option);
+        });
+
+        subjectSelect.value = enrollment.subjectId;
+
+        subjectSelect.addEventListener("change", () => {
+            currentEnrollments[index].subjectId =
+                Number(subjectSelect.value);
+        });
+
+        const courseLabel = document.createElement("label");
+        courseLabel.textContent = "Academic course";
+
+        const courseSelect = document.createElement("select");
+
+        currentCourses.forEach(course => {
+            const option = document.createElement("option");
+            option.value = course.id;
+
+            option.textContent =
+                course.name +
+                (course.startDate && course.endDate
+                    ? " (" + course.startDate + " - " + course.endDate + ")"
+                    : "");
+
+            courseSelect.appendChild(option);
+        });
+
+        courseSelect.value = enrollment.courseId;
+
+        courseSelect.addEventListener("change", () => {
+            currentEnrollments[index].courseId =
+                Number(courseSelect.value);
+        });
+
+        const hoursLabel = document.createElement("label");
+        hoursLabel.textContent = "Study hours";
 
         const hoursInput = createEnrollmentInput("number", "Study hours");
         hoursInput.min = "0";
@@ -151,7 +246,22 @@ function renderSubjectCheckboxes() {
         row.appendChild(label);
         row.appendChild(fields);
 
-        subjectCheckboxes.appendChild(row);
+        gradeInput.addEventListener("input", () => {
+            currentEnrollments[index].grade = gradeInput.value;
+        });
+
+        content.appendChild(title);
+        content.appendChild(subjectLabel);
+        content.appendChild(subjectSelect);
+        content.appendChild(courseLabel);
+        content.appendChild(courseSelect);
+        content.appendChild(hoursLabel);
+        content.appendChild(hoursInput);
+        content.appendChild(gradeLabel);
+        content.appendChild(gradeInput);
+
+        row.appendChild(content);
+        enrollmentContainer.appendChild(row);
     });
 }
 
@@ -192,22 +302,41 @@ async function saveStudent(event) {
     event.preventDefault();
 
     const id = studentIdInput.value;
-
     const enrollments = [];
 
-for (const enrollment of currentEnrollments) {
-    const hours = Number(enrollment.studyHours);
+    for (const enrollment of currentEnrollments) {
+        const hours = Number(enrollment.studyHours);
 
-    if (
-        enrollment.studyHours === "" ||
-        !Number.isFinite(hours) ||
-        hours < 0
-    ) {
-        showMessage(
-            "Enter valid study hours for every selected subject.",
-            true
-        );
-        return;
+        if (
+            enrollment.studyHours === "" ||
+            !Number.isFinite(hours) ||
+            hours < 0
+        ) {
+            showMessage("Enter valid study hours for every enrollment.", true);
+            return;
+        }
+
+        let grade = null;
+
+        if (enrollment.grade !== "" && enrollment.grade != null) {
+            grade = Number(enrollment.grade);
+
+            if (
+                !Number.isFinite(grade) ||
+                grade < 0 ||
+                grade > 10
+            ) {
+                showMessage("Grades must be between 0 and 10.", true);
+                return;
+            }
+        }
+
+        enrollments.push({
+            subjectId: Number(enrollment.subjectId),
+            courseId: Number(enrollment.courseId),
+            studyHours: hours,
+            grade: grade
+        });
     }
 
     let grade = null;
@@ -230,14 +359,16 @@ for (const enrollment of currentEnrollments) {
     });
 }
 
-const student = {
-    name: nameInput.value.trim(),
-    studyHours: Number(studyHoursInput.value),
-    enrollments: enrollments
-};
+    if (student.name === "") {
+        showMessage("Enter the student's name.", true);
+        return;
+    }
 
-    if (!Number.isFinite(student.studyHours) || student.studyHours < 0) {
-        showMessage("Enter valid study hours.", true);
+    if (
+        !Number.isFinite(student.studyHours) ||
+        student.studyHours < 0
+    ) {
+        showMessage("Enter valid general study hours.", true);
         return;
     }
 
@@ -303,10 +434,15 @@ function renderStudents(students) {
             const empty = document.createElement("p");
             empty.textContent = "No enrollments.";
             card.appendChild(empty);
+
         } else {
             student.enrollments.forEach(enrollment => {
                 const subject = currentSubjects.find(
                     item => Number(item.id) === Number(enrollment.subjectId)
+                );
+
+                const course = currentCourses.find(
+                    item => Number(item.id) === Number(enrollment.courseId)
                 );
 
                 const subjectName = subject
@@ -332,16 +468,21 @@ function renderStudents(students) {
 
                 const prediction = document.createElement("p");
                 prediction.className = "prediction";
-                prediction.id =
-                    "prediction-" + student.id + "-" + enrollment.subjectId;
+                prediction.id = getPredictionElementId(
+                    student.id,
+                    enrollment.subjectId,
+                    enrollment.courseId
+                );
 
                 const predictButton = document.createElement("button");
                 predictButton.type = "button";
                 predictButton.textContent = "Predict grade";
+
                 predictButton.addEventListener("click", () => {
                     requestSubjectPrediction(
                         student.id,
-                        enrollment.subjectId
+                        enrollment.subjectId,
+                        enrollment.courseId
                     );
                 });
 
@@ -354,18 +495,25 @@ function renderStudents(students) {
         const actions = document.createElement("div");
         actions.className = "student-actions";
 
-        actions.appendChild(createButton("Edit", () => startEdit(student.id)));
-        actions.appendChild(createButton("Delete", () => deleteStudent(student.id)));
+        actions.appendChild(
+            createButton("Edit", () => startEdit(student.id))
+        );
+
+        actions.appendChild(
+            createButton("Delete", () => deleteStudent(student.id))
+        );
+
         actions.appendChild(createButton(
             "Predict general grade",
             () => requestPrediction(student.id)
         ));
 
         card.appendChild(actions);
-        // Contenedor donde requestPrediction() escribe la predicción general.
+
         const generalPrediction = document.createElement("p");
         generalPrediction.className = "prediction";
         generalPrediction.id = "prediction-general-" + student.id;
+
         card.appendChild(generalPrediction);
 
         const reports = document.createElement("div");
@@ -382,6 +530,15 @@ function renderStudents(students) {
 
         studentList.appendChild(card);
     });
+}
+
+
+// ========================================
+// IDENTIFICADOR DE PREDICCIÓN
+// ========================================
+
+function getPredictionElementId(studentId, subjectId, courseId) {
+    return "prediction-" + studentId + "-" + subjectId + "-" + courseId;
 }
 
 
@@ -433,7 +590,7 @@ function startEdit(studentId) {
         grade: enrollment.grade == null ? "" : enrollment.grade
     }));
 
-    renderSubjectCheckboxes();
+    renderEnrollmentRows();
 
     formTitle.textContent = "Edit student";
     cancelEditButton.classList.remove("hidden");
@@ -446,6 +603,10 @@ function startEdit(studentId) {
 // ========================================
 
 async function deleteStudent(studentId) {
+    if (!confirm("Are you sure you want to delete this student?")) {
+        return;
+    }
+
     try {
         const response = await fetch("/students/" + studentId, {
             method: "DELETE"
@@ -489,11 +650,6 @@ async function requestPrediction(studentId) {
         if (result) {
             result.textContent =
                 "Predicted grade: " + prediction.predictedGrade;
-        } else {
-            showMessage(
-                "Predicted grade: " + prediction.predictedGrade,
-                false
-            );
         }
 
     } catch (error) {
@@ -503,12 +659,16 @@ async function requestPrediction(studentId) {
 
 
 // ========================================
-// PREDICCIÓN POR ASIGNATURA
+// PREDICCIÓN POR ASIGNATURA Y CURSO
 // ========================================
 
-async function requestSubjectPrediction(studentId, subjectId) {
+async function requestSubjectPrediction(
+    studentId,
+    subjectId,
+    courseId
+) {
     const result = document.getElementById(
-        "prediction-" + studentId + "-" + subjectId
+        getPredictionElementId(studentId, subjectId, courseId)
     );
 
     result.textContent = "Requesting prediction...";
@@ -516,7 +676,9 @@ async function requestSubjectPrediction(studentId, subjectId) {
     try {
         const response = await fetch(
             "/students/" + studentId +
-            "/subjects/" + subjectId + "/prediction"
+            "/subjects/" + subjectId +
+            "/courses/" + courseId +
+            "/prediction"
         );
 
         if (!response.ok) {
@@ -546,7 +708,7 @@ function resetForm() {
     studentIdInput.value = "";
     currentEnrollments = [];
 
-    renderSubjectCheckboxes();
+    renderEnrollmentRows();
 
     formTitle.textContent = "Add student";
     cancelEditButton.classList.add("hidden");
@@ -563,6 +725,7 @@ async function showApiError(response) {
     try {
         const errorData = await response.json();
         errorMessage = errorData.error || errorMessage;
+
     } catch (error) {
         // La respuesta no contenía JSON.
     }

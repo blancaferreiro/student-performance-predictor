@@ -1,3 +1,4 @@
+
 package edu.example.studentperformance;
 
 import java.sql.Connection;
@@ -9,10 +10,9 @@ import java.sql.Statement;
 
 /**
  * Gestiona la conexión a MySQL y crea las tablas al arrancar.
- * Los datos de conexión se leen de variables de entorno; los valores
- * por defecto permiten ejecutar con "mvn compile exec:java" en local.
  */
 public final class Database {
+
     private static final String URL = env("DB_URL", "jdbc:mysql://localhost:3306/studentdb");
     private static final String USER = env("DB_USER", "app");
     private static final String PASSWORD = env("DB_PASSWORD", "app");
@@ -24,27 +24,41 @@ public final class Database {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    /**
-     * Crea las tablas si no existen. Reintenta porque MySQL puede tardar
-     * unos segundos en aceptar conexiones aunque su contenedor ya esté levantado.
-     */
     public static void init() {
         SQLException lastError = null;
+
         for (int attempt = 1; attempt <= 30; attempt++) {
             try (Connection connection = getConnection();
                  Statement statement = connection.createStatement()) {
 
                 statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS students ("
-                    + "id INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "name VARCHAR(255) NOT NULL, "
-                    + "study_hours DOUBLE NOT NULL)");
+                    "CREATE TABLE IF NOT EXISTS students (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(255) NOT NULL, " +
+                    "study_hours DOUBLE NOT NULL)"
+                );
 
                 statement.executeUpdate(
-                    "CREATE TABLE IF NOT EXISTS subjects ("
+                    "CREATE TABLE IF NOT EXISTS subjects (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(255) NOT NULL, " +
+                    "difficulty ENUM('EASY','MEDIUM','HARD') NOT NULL)"
+                );
+
+                statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS courses (" +
+                    "id INT AUTO_INCREMENT PRIMARY KEY, " +
+                    "name VARCHAR(100) NOT NULL UNIQUE, " +
+                    "start_date DATE NOT NULL, " +
+                    "end_date DATE NOT NULL)"
+                );
+
+                statement.executeUpdate(
+                    "CREATE TABLE IF NOT EXISTS courses ("
                     + "id INT AUTO_INCREMENT PRIMARY KEY, "
-                    + "name VARCHAR(255) NOT NULL, "
-                    + "difficulty ENUM('EASY','MEDIUM','HARD') NOT NULL)");
+                    + "name VARCHAR(100) NOT NULL UNIQUE, "
+                    + "start_date DATE NOT NULL, "
+                    + "end_date DATE NOT NULL)");
 
                 statement.executeUpdate(
                     "CREATE TABLE IF NOT EXISTS enrollments ("
@@ -64,9 +78,11 @@ public final class Database {
 
                 System.out.println("Database ready.");
                 return;
+
             } catch (SQLException exception) {
                 lastError = exception;
                 System.out.println("Waiting for MySQL (attempt " + attempt + "/30)...");
+
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException interrupted) {
@@ -75,6 +91,7 @@ public final class Database {
                 }
             }
         }
+
         throw new IllegalStateException("Could not connect to MySQL", lastError);
     }
 
@@ -97,9 +114,11 @@ public final class Database {
 
     private static String env(String name, String defaultValue) {
         String value = System.getenv(name);
+
         if (value == null || value.isBlank()) {
             return defaultValue;
         }
+
         return value;
     }
 }
