@@ -159,7 +159,7 @@ form h3 + p {
 
 .enrollment-item {
     display: grid;
-    grid-template-columns: auto 1fr minmax(120px, 170px);
+    grid-template-columns: auto 1fr;
     align-items: center;
     gap: 12px;
     padding: 10px 14px;
@@ -188,6 +188,17 @@ form h3 + p {
 
 .enrollment-item input[type="number"] {
     max-width: none;
+}
+
+.enrollment-fields {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(100px, 1fr));
+    gap: 8px;
+}
+
+.enrollment-fields input {
+    margin: 0;
 }
 
 /* ---------- Botones ---------- */
@@ -300,6 +311,30 @@ button.secondary:hover {
     background: #fbeceb;
 }
 
+.report-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.report-link {
+    display: inline-block;
+    padding: 8px 14px;
+    border: 1px solid var(--field);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.report-link:hover {
+    background: #eef1ec;
+    border-color: var(--chalk);
+}
+
 /* Resultado de la predicción */
 .prediction {
     width: fit-content;
@@ -349,8 +384,8 @@ button.secondary:hover {
         grid-template-columns: auto 1fr;
     }
 
-    .enrollment-item input[type="number"] {
-        grid-column: 1 / -1;
+    .enrollment-fields {
+        grid-template-columns: 1fr;
     }
 }
 

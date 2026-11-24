@@ -2,7 +2,9 @@
 package edu.example.studentperformance;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -63,9 +65,16 @@ public final class Database {
                     + "student_id INT NOT NULL, "
                     + "subject_id INT NOT NULL, "
                     + "study_hours DOUBLE NOT NULL CHECK (study_hours >= 0), "
+                    + "course VARCHAR(100) NULL, "
+                    + "academic_year VARCHAR(20) NULL, "
+                    + "grade DOUBLE NULL, "
                     + "PRIMARY KEY (student_id, subject_id), "
                     + "FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE, "
                     + "FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE)");
+
+                ensureColumn(connection, statement, "enrollments", "course", "VARCHAR(100) NULL");
+                ensureColumn(connection, statement, "enrollments", "academic_year", "VARCHAR(20) NULL");
+                ensureColumn(connection, statement, "enrollments", "grade", "DOUBLE NULL");
 
                 System.out.println("Database ready.");
                 return;
@@ -84,6 +93,23 @@ public final class Database {
         }
 
         throw new IllegalStateException("Could not connect to MySQL", lastError);
+    }
+
+    private static void ensureColumn(
+            Connection connection,
+            Statement statement,
+            String table,
+            String column,
+            String definition) throws SQLException {
+
+        DatabaseMetaData metadata = connection.getMetaData();
+        try (ResultSet columns = metadata.getColumns(
+                connection.getCatalog(), null, table, column)) {
+            if (!columns.next()) {
+                statement.executeUpdate(
+                        "ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+            }
+        }
     }
 
     private static String env(String name, String defaultValue) {

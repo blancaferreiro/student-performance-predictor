@@ -10,6 +10,8 @@ public class Enrollment {
     private Long subjectId;
     private Integer courseId;
     private double studyHours;
+    private String course;
+    private String academicYear;
     private Double grade;
 
     /**
@@ -26,6 +28,19 @@ public class Enrollment {
         this.subjectId = subjectId;
         this.courseId = courseId;
         this.studyHours = studyHours;
+        this.grade = grade;
+    }
+
+    public Enrollment(
+            Long subjectId,
+            double studyHours,
+            String course,
+            String academicYear,
+            Double grade) {
+        this.subjectId = subjectId;
+        this.studyHours = studyHours;
+        this.course = course;
+        this.academicYear = academicYear;
         this.grade = grade;
     }
 
@@ -51,6 +66,22 @@ public class Enrollment {
 
     public void setStudyHours(double studyHours) {
         this.studyHours = studyHours;
+    }
+
+    public String getCourse() {
+        return course;
+    }
+
+    public void setCourse(String course) {
+        this.course = course;
+    }
+
+    public String getAcademicYear() {
+        return academicYear;
+    }
+
+    public void setAcademicYear(String academicYear) {
+        this.academicYear = academicYear;
     }
 
     public Double getGrade() {

@@ -250,21 +250,13 @@ public class StudentService {
                 return false;
             }
 
-            // Comprobar la calificación.
             Double grade = enrollment.getGrade();
-
             if (grade != null
-                    && (!Double.isFinite(grade)
-                    || grade < 0
-                    || grade > 10)) {
+                    && (!Double.isFinite(grade) || grade < 0 || grade > 10)) {
                 return false;
             }
 
-            // No permitir dos matrículas de la misma asignatura
-            // en el mismo curso.
-            String key = subjectId + "-" + courseId;
-
-            if (!enrollmentKeys.add(key)) {
+            if (!subjectIds.add(subjectId)) {
                 return false;
             }
         }

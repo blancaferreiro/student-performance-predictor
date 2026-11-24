@@ -153,9 +153,8 @@ public class StudentRepository {
     private void loadEnrollments(Connection connection, Student student)
             throws SQLException {
 
-        String sql = "SELECT subject_id, course_id, study_hours, grade "
-                + "FROM enrollments WHERE student_id = ? "
-                + "ORDER BY course_id, subject_id";
+        String sql = "SELECT subject_id, study_hours, course, academic_year, grade "
+                + "FROM enrollments WHERE student_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, student.getId());
@@ -164,14 +163,14 @@ public class StudentRepository {
                 List<Enrollment> enrollments = new ArrayList<>();
 
                 while (rows.next()) {
-                    double gradeValue = rows.getDouble("grade");
-                    Double grade = rows.wasNull() ? null : gradeValue;
+                    Object gradeValue = rows.getObject("grade");
 
                     enrollments.add(new Enrollment(
                             rows.getLong("subject_id"),
-                            rows.getInt("course_id"),
                             rows.getDouble("study_hours"),
-                            grade
+                            rows.getString("course"),
+                            rows.getString("academic_year"),
+                            gradeValue == null ? null : rows.getDouble("grade")
                     ));
                 }
 
@@ -188,35 +187,27 @@ public class StudentRepository {
     private void saveEnrollments(Connection connection, Student student)
             throws SQLException {
 
-        String sql = "INSERT INTO enrollments "
-                + "(student_id, subject_id, course_id, study_hours, grade) "
-                + "VALUES (?, ?, ?, ?, ?) "
-                + "ON DUPLICATE KEY UPDATE "
-                + "study_hours = VALUES(study_hours), "
-                + "grade = COALESCE(VALUES(grade), grade)";
+        String deleteSql = "DELETE FROM enrollments WHERE student_id = ?";
+        String insertSql = "INSERT INTO enrollments "
+                + "(student_id, subject_id, study_hours, course, academic_year, grade) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
 
             for (Enrollment enrollment : student.getEnrollments()) {
-
-                if (enrollment.getCourseId() == null) {
-                    throw new SQLException(
-                            "Every enrollment must have an academic course"
-                    );
-                }
-
-                statement.setInt(1, student.getId());
-                statement.setLong(2, enrollment.getSubjectId());
-                statement.setInt(3, enrollment.getCourseId());
-                statement.setDouble(4, enrollment.getStudyHours());
+                insertStatement.setInt(1, student.getId());
+                insertStatement.setLong(2, enrollment.getSubjectId());
+                insertStatement.setDouble(3, enrollment.getStudyHours());
+                insertStatement.setString(4, enrollment.getCourse());
+                insertStatement.setString(5, enrollment.getAcademicYear());
 
                 if (enrollment.getGrade() == null) {
-                    statement.setNull(5, Types.DOUBLE);
+                    insertStatement.setNull(6, Types.DOUBLE);
                 } else {
-                    statement.setDouble(5, enrollment.getGrade());
+                    insertStatement.setDouble(6, enrollment.getGrade());
                 }
 
-                statement.addBatch();
+                insertStatement.addBatch();
             }
 
             statement.executeBatch();

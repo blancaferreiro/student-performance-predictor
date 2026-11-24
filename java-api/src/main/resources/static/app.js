@@ -14,12 +14,7 @@ let currentStudents = [];
 let currentSubjects = [];
 let currentCourses = [];
 let currentEnrollments = [];
-
-const DIFFICULTY_LABELS = {
-    EASY: "Easy",
-    MEDIUM: "Medium",
-    HARD: "Hard"
-};
+const DIFFICULTY_LABELS = { EASY: "Fácil", MEDIUM: "Media", HARD: "Difícil" };
 
 form.addEventListener("submit", saveStudent);
 cancelEditButton.addEventListener("click", resetForm);
@@ -178,27 +173,78 @@ function renderEnrollmentRows() {
         const hoursLabel = document.createElement("label");
         hoursLabel.textContent = "Study hours";
 
-        const hoursInput = document.createElement("input");
-        hoursInput.type = "number";
+        const hoursInput = createEnrollmentInput("number", "Study hours");
         hoursInput.min = "0";
         hoursInput.step = "0.5";
-        hoursInput.placeholder = "Enter study hours";
-        hoursInput.value = enrollment.studyHours;
 
-        hoursInput.addEventListener("input", () => {
-            currentEnrollments[index].studyHours = hoursInput.value;
-        });
-
-        const gradeLabel = document.createElement("label");
-        gradeLabel.textContent = "Grade (optional, 0-10)";
-
-        const gradeInput = document.createElement("input");
-        gradeInput.type = "number";
+        const courseInput = createEnrollmentInput("text", "Course");
+        const academicYearInput = createEnrollmentInput("text", "Academic year");
+        const gradeInput = createEnrollmentInput("number", "Grade (0-10)");
         gradeInput.min = "0";
         gradeInput.max = "10";
-        gradeInput.step = "0.01";
-        gradeInput.placeholder = "Leave empty if not graded";
-        gradeInput.value = enrollment.grade ?? "";
+        gradeInput.step = "0.1";
+
+        const inputs = [hoursInput, courseInput, academicYearInput, gradeInput];
+        const fields = document.createElement("div");
+        fields.className = "enrollment-fields";
+        fields.append(...inputs);
+
+        const fillInputs = () => {
+            hoursInput.value = enrollment ? enrollment.studyHours : "";
+            courseInput.value = enrollment ? enrollment.course : "";
+            academicYearInput.value = enrollment ? enrollment.academicYear : "";
+            gradeInput.value = enrollment ? enrollment.grade : "";
+        };
+
+        inputs.forEach(input => {
+            input.disabled = !enrollment;
+        });
+        fillInputs();
+
+        checkbox.addEventListener("change", () => {
+            if (checkbox.checked) {
+                currentEnrollments.push({
+                    subjectId: Number(subject.id),
+                    studyHours: "",
+                    course: "",
+                    academicYear: "",
+                    grade: ""
+                });
+                inputs.forEach(input => {
+                    input.disabled = false;
+                });
+                hoursInput.focus();
+            } else {
+                currentEnrollments = currentEnrollments.filter(
+                    item => Number(item.subjectId) !== Number(subject.id)
+                );
+                inputs.forEach(input => {
+                    input.value = "";
+                    input.disabled = true;
+                });
+            }
+        });
+
+        const bindInput = (input, field) => {
+            input.addEventListener("input", () => {
+                const selectedEnrollment = currentEnrollments.find(
+                    item => Number(item.subjectId) === Number(subject.id)
+                );
+
+                if (selectedEnrollment) {
+                    selectedEnrollment[field] = input.value;
+                }
+            });
+        };
+
+        bindInput(hoursInput, "studyHours");
+        bindInput(courseInput, "course");
+        bindInput(academicYearInput, "academicYear");
+        bindInput(gradeInput, "grade");
+
+        row.appendChild(checkbox);
+        row.appendChild(label);
+        row.appendChild(fields);
 
         gradeInput.addEventListener("input", () => {
             currentEnrollments[index].grade = gradeInput.value;
@@ -217,6 +263,13 @@ function renderEnrollmentRows() {
         row.appendChild(content);
         enrollmentContainer.appendChild(row);
     });
+}
+
+function createEnrollmentInput(type, placeholder) {
+    const input = document.createElement("input");
+    input.type = type;
+    input.placeholder = placeholder;
+    return input;
 }
 
 
@@ -286,11 +339,25 @@ async function saveStudent(event) {
         });
     }
 
-    const student = {
-        name: nameInput.value.trim(),
-        studyHours: Number(studyHoursInput.value),
-        enrollments: enrollments
-    };
+    let grade = null;
+
+    if (enrollment.grade !== "" && enrollment.grade != null) {
+        grade = Number(enrollment.grade);
+
+        if (!Number.isFinite(grade) || grade < 0 || grade > 10) {
+            showMessage("Enter a valid grade between 0 and 10.", true);
+            return;
+        }
+    }
+
+    enrollments.push({
+        subjectId: Number(enrollment.subjectId),
+        studyHours: hours,
+        course: (enrollment.course || "").trim() || null,
+        academicYear: (enrollment.academicYear || "").trim() || null,
+        grade: grade
+    });
+}
 
     if (student.name === "") {
         showMessage("Enter the student's name.", true);
@@ -382,18 +449,22 @@ function renderStudents(students) {
                     ? subject.name
                     : "Subject " + enrollment.subjectId;
 
-                const courseName = course
-                    ? course.name
-                    : "Course " + enrollment.courseId;
+                const details = [subjectName + ": " + enrollment.studyHours + " hours"];
+
+                if (enrollment.course) {
+                    details.push("Course: " + enrollment.course);
+                }
+
+                if (enrollment.academicYear) {
+                    details.push("Academic year: " + enrollment.academicYear);
+                }
+
+                if (enrollment.grade != null) {
+                    details.push("Grade: " + enrollment.grade);
+                }
 
                 const enrollmentInfo = document.createElement("p");
-
-                enrollmentInfo.textContent =
-                    subjectName + " | " +
-                    courseName + " | " +
-                    enrollment.studyHours + " hours | " +
-                    "Grade: " +
-                    (enrollment.grade == null ? "Not graded" : enrollment.grade);
+                enrollmentInfo.textContent = details.join(" · ");
 
                 const prediction = document.createElement("p");
                 prediction.className = "prediction";
@@ -444,6 +515,19 @@ function renderStudents(students) {
         generalPrediction.id = "prediction-general-" + student.id;
 
         card.appendChild(generalPrediction);
+
+        const reports = document.createElement("div");
+        reports.className = "report-actions";
+        reports.appendChild(createReportLink(
+            "Report CSV",
+            "/students/" + student.id + "/report?format=csv"
+        ));
+        reports.appendChild(createReportLink(
+            "Report JSON",
+            "/students/" + student.id + "/report?format=json"
+        ));
+        card.appendChild(reports);
+
         studentList.appendChild(card);
     });
 }
@@ -470,6 +554,15 @@ function createButton(label, clickHandler) {
     return button;
 }
 
+function createReportLink(label, href) {
+    const link = document.createElement("a");
+    link.className = "report-link";
+    link.href = href;
+    link.textContent = label;
+    link.setAttribute("download", "");
+    return link;
+}
+
 
 // ========================================
 // EDITAR ESTUDIANTE
@@ -491,9 +584,10 @@ function startEdit(studentId) {
 
     currentEnrollments = (student.enrollments || []).map(enrollment => ({
         subjectId: Number(enrollment.subjectId),
-        courseId: Number(enrollment.courseId),
-        studyHours: String(enrollment.studyHours),
-        grade: enrollment.grade == null ? "" : String(enrollment.grade)
+        studyHours: Number(enrollment.studyHours),
+        course: enrollment.course || "",
+        academicYear: enrollment.academicYear || "",
+        grade: enrollment.grade == null ? "" : enrollment.grade
     }));
 
     renderEnrollmentRows();

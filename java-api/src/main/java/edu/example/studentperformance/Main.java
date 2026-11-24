@@ -29,6 +29,20 @@ public class Main {
                 || predictionServiceUrl.isBlank()) {
             predictionServiceUrl = "http://localhost:8000";
         }
+        PredictionClient predictionClient = new PredictionClient(predictionServiceUrl);
+        StudentService service = new StudentService(repository, predictionClient, subjectRepository);
+
+        String reportServiceUrl = envOrDefault(
+                "REPORT_SERVICE_URL",
+                "http://localhost:8001");
+        ReportClient reportClient = new ReportClient(reportServiceUrl);
+        ReportGenerator reportGenerator = new PythonReportAdapter(reportClient);
+        ReportService reportService = new ReportService(
+                repository,
+                subjectRepository,
+                reportGenerator);
+
+        StudentController controller = new StudentController(service, reportService);
 
         PredictionClient predictionClient =
                 new PredictionClient(predictionServiceUrl);
@@ -79,5 +93,15 @@ public class Main {
         System.out.println(
                 "Student Performance Predictor is running at http://localhost:8080"
         );
+    }
+
+    private static String envOrDefault(String name, String defaultValue) {
+        String value = System.getenv(name);
+
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        return value;
     }
 }
