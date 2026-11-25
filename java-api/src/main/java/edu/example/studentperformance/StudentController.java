@@ -1,4 +1,3 @@
-
 package edu.example.studentperformance;
 
 import com.google.gson.Gson;
@@ -12,37 +11,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
 
 public class StudentController implements HttpHandler {
 
     private final StudentService service;
-    private final ReportService reportService;
-
-    // Gson es una biblioteca que permite transformar:
-    //
-    // Objeto Java -> JSON
-    // JSON -> Objeto Java
-    //
-    // Esto es necesario porque el navegador se comunica
-    // con Java intercambiando datos en formato JSON.
+    private final AcademicReportFacade reportFacade;
     private final Gson gson;
 
-
-    /**
-     * Constructor de StudentController.
-     *
-     * Recibimos un objeto StudentService previamente creado.
-     *
-     * De esta manera, el controlador puede utilizar el servicio
-     * sin tener que encargarse de crearlo.
-     */
-    public StudentController(StudentService service, ReportService reportService) {
-
-        // Guardamos la referencia al servicio recibido.
+    public StudentController(StudentService service, AcademicReportFacade reportFacade) {
         this.service = service;
-        this.reportService = reportService;
-
-        // Creamos el objeto Gson para trabajar con JSON.
+        this.reportFacade = reportFacade;
         gson = new Gson();
     }
 
@@ -85,19 +64,12 @@ public class StudentController implements HttpHandler {
             return;
         }
 
-        // CASO 3:
-        // La petición solicita la predicción de un estudiante.
-        //
-        // Ejemplo: /students/1/prediction
+        // GET /students/{id}/prediction
+        // GET /students/{id}/report
         if (parts.length == 4) {
 
-            // Comprobamos que el último segmento sea "prediction".
             if ("prediction".equals(parts[3])) {
-
-                // Obtenemos el identificador del estudiante.
                 int id = Integer.parseInt(parts[2]);
-
-                // Delegamos en el método de predicciones.
                 handlePrediction(exchange, method, id);
                 return;
             }
@@ -291,7 +263,6 @@ public class StudentController implements HttpHandler {
         }
     }
 
-
     private void handleReport(
             HttpExchange exchange,
             String method,
@@ -302,32 +273,18 @@ public class StudentController implements HttpHandler {
             return;
         }
 
-        ReportFormat format;
+        String formatParam = queryParameter(
+                exchange.getRequestURI().getQuery(), "format");
 
         try {
-            format = ReportFormat.from(
-                    queryParameter(exchange.getRequestURI().getQuery(), "format"));
+            ReportResult result = reportFacade.generateReport(id, formatParam);
+            sendReport(exchange, result);
+
         } catch (IllegalArgumentException exception) {
             sendError(exchange, 400, exception.getMessage());
-            return;
-        }
 
-        Student student = service.getStudent(id);
-
-        if (student == null) {
-            sendError(exchange, 404, "Student not found");
-            return;
-        }
-
-        try {
-            ReportResult result = reportService.generateStudentReport(id, format);
-
-            if (result == null) {
-                sendError(exchange, 404, "Student not found");
-                return;
-            }
-
-            sendReport(exchange, result);
+        } catch (NoSuchElementException exception) {
+            sendError(exchange, 404, exception.getMessage());
 
         } catch (InterruptedException exception) {
             Thread.currentThread().interrupt();
@@ -337,7 +294,6 @@ public class StudentController implements HttpHandler {
             sendError(exchange, 503, "Report service is unavailable");
         }
     }
-
 
     private String queryParameter(String query, String name) {
         if (query == null) {
@@ -354,7 +310,6 @@ public class StudentController implements HttpHandler {
 
         return null;
     }
-
 
     private void sendReport(HttpExchange exchange, ReportResult result)
             throws IOException {
@@ -373,25 +328,6 @@ public class StudentController implements HttpHandler {
         }
     }
 
-
-    // ============================================================
-    // 6. CONVERTIR JSON EN OBJETOS JAVA
-    // ============================================================
-
-    /**
-     * Lee los datos enviados por el cliente en el cuerpo
-     * de una petición HTTP y los convierte en un objeto Student.
-     *
-     * Ejemplo de JSON recibido:
-     *
-     * {
-     *     "name": "Ana",
-     *     "studyHours": 5
-     * }
-     *
-     * Resultado:
-     * Un objeto Student con esos valores.
-     */
     private Student readStudent(HttpExchange exchange) {
         InputStreamReader reader = new InputStreamReader(
                 exchange.getRequestBody(),

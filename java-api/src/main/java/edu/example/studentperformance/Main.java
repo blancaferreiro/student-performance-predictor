@@ -26,9 +26,10 @@ public class Main {
                 "http://localhost:8001");
         ReportClient reportClient = new ReportClient(reportServiceUrl);
         ReportGenerator reportGenerator = new PythonReportAdapter(reportClient);
-        ReportService reportService = new ReportService(
+        AcademicReportFacade reportFacade = new AcademicReportFacade(
                 repository,
                 subjectRepository,
+                courseRepository,
                 reportGenerator);
 
         StudentService service = new StudentService(
@@ -38,7 +39,7 @@ public class Main {
                 courseRepository
         );
 
-        StudentController controller = new StudentController(service, reportService);
+        StudentController controller = new StudentController(service, reportFacade);
 
         SubjectService subjectService = new SubjectService(subjectRepository);
         SubjectController subjectController = new SubjectController(subjectService);
