@@ -1,4 +1,3 @@
-
 package edu.example.studentperformance;
 
 import java.sql.Connection;
@@ -10,9 +9,6 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Guarda estudiantes y sus matrículas en MySQL.
- */
 public class StudentRepository {
 
     public List<Student> findAll() {
@@ -147,14 +143,13 @@ public class StudentRepository {
         }
     }
 
-    /**
-     * Recupera todas las matrículas históricas de un estudiante.
-     */
     private void loadEnrollments(Connection connection, Student student)
             throws SQLException {
 
-        String sql = "SELECT subject_id, study_hours, course, academic_year, grade "
-                + "FROM enrollments WHERE student_id = ?";
+        String sql = "SELECT e.subject_id, e.course_id, e.study_hours, e.grade, c.name AS course_name "
+                + "FROM enrollments e "
+                + "LEFT JOIN courses c ON e.course_id = c.id "
+                + "WHERE e.student_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, student.getId());
@@ -164,14 +159,17 @@ public class StudentRepository {
 
                 while (rows.next()) {
                     Object gradeValue = rows.getObject("grade");
+                    String courseName = rows.getString("course_name");
 
-                    enrollments.add(new Enrollment(
+                    Enrollment enrollment = new Enrollment(
                             rows.getLong("subject_id"),
+                            rows.getInt("course_id"),
                             rows.getDouble("study_hours"),
-                            rows.getString("course"),
-                            rows.getString("academic_year"),
                             gradeValue == null ? null : rows.getDouble("grade")
-                    ));
+                    );
+                    enrollment.setCourse(courseName);
+                    enrollment.setAcademicYear(courseName);
+                    enrollments.add(enrollment);
                 }
 
                 student.setEnrollments(enrollments);
@@ -179,38 +177,40 @@ public class StudentRepository {
         }
     }
 
-    /**
-     * Inserta las matrículas nuevas o actualiza las existentes.
-     * No elimina las matrículas históricas.
-     * Si la nota recibida es null, conserva la nota anterior.
-     */
     private void saveEnrollments(Connection connection, Student student)
             throws SQLException {
 
         String deleteSql = "DELETE FROM enrollments WHERE student_id = ?";
         String insertSql = "INSERT INTO enrollments "
-                + "(student_id, subject_id, study_hours, course, academic_year, grade) "
-                + "VALUES (?, ?, ?, ?, ?, ?)";
+                + "(student_id, subject_id, course_id, study_hours, grade) "
+                + "VALUES (?, ?, ?, ?, ?)";
 
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
+            deleteStatement.setInt(1, student.getId());
+            deleteStatement.executeUpdate();
+        }
 
+        if (student.getEnrollments() == null || student.getEnrollments().isEmpty()) {
+            return;
+        }
+
+        try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
             for (Enrollment enrollment : student.getEnrollments()) {
                 insertStatement.setInt(1, student.getId());
                 insertStatement.setLong(2, enrollment.getSubjectId());
-                insertStatement.setDouble(3, enrollment.getStudyHours());
-                insertStatement.setString(4, enrollment.getCourse());
-                insertStatement.setString(5, enrollment.getAcademicYear());
+                insertStatement.setInt(3, enrollment.getCourseId());
+                insertStatement.setDouble(4, enrollment.getStudyHours());
 
                 if (enrollment.getGrade() == null) {
-                    insertStatement.setNull(6, Types.DOUBLE);
+                    insertStatement.setNull(5, Types.DOUBLE);
                 } else {
-                    insertStatement.setDouble(6, enrollment.getGrade());
+                    insertStatement.setDouble(5, enrollment.getGrade());
                 }
 
                 insertStatement.addBatch();
             }
 
-            statement.executeBatch();
+            insertStatement.executeBatch();
         }
     }
 

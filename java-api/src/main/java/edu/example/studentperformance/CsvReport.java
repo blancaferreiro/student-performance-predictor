@@ -2,13 +2,14 @@ package edu.example.studentperformance;
 
 import java.util.List;
 
-/**
- * Implementación concreta para informes en formato CSV (HU-04).
- */
 public class CsvReport extends AcademicReport {
 
-    public CsvReport(Student student, List<Enrollment> enrollments) {
-        super(student, enrollments);
+    public CsvReport(
+            int studentId,
+            String studentName,
+            String academicYear,
+            List<ReportRecord> records) {
+        super(studentId, studentName, academicYear, records);
     }
 
     @Override

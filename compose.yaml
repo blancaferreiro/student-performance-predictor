@@ -48,7 +48,7 @@ services:
     environment:
       PYTHON_SERVICE_URL: http://python-service:8000
       REPORT_SERVICE_URL: http://report-service:8001
-      DB_URL: jdbc:mysql://mysql:3306/studentdb
+      DB_URL: "jdbc:mysql://mysql:3306/studentdb?allowPublicKeyRetrieval=true&useSSL=false"
       DB_USER: app
       DB_PASSWORD: app
     depends_on:

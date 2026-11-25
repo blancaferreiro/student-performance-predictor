@@ -2,13 +2,14 @@ package edu.example.studentperformance;
 
 import java.util.List;
 
-/**
- * Implementación concreta para informes en formato JSON (HU-04).
- */
 public class JsonReport extends AcademicReport {
 
-    public JsonReport(Student student, List<Enrollment> enrollments) {
-        super(student, enrollments);
+    public JsonReport(
+            int studentId,
+            String studentName,
+            String academicYear,
+            List<ReportRecord> records) {
+        super(studentId, studentName, academicYear, records);
     }
 
     @Override

@@ -49,7 +49,8 @@ public class ReportService {
                     enrollment.getGrade()));
         }
 
-        AcademicReport report = new AcademicReport(
+        AcademicReport report = ReportFactory.createReport(
+                format.getExtension(),
                 student.getId(),
                 student.getName(),
                 academicYear,

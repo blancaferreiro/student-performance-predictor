@@ -2,30 +2,39 @@ package edu.example.studentperformance;
 
 import java.util.List;
 
-/**
- * Clase abstracta que representa la estructura base de un informe académico.
- * Contiene los atributos y comportamientos comunes (HU-04).
- */
 public abstract class AcademicReport {
 
-    protected Student student;
-    protected List<Enrollment> enrollments;
+    protected final int studentId;
+    protected final String studentName;
+    protected final String academicYear;
+    protected final List<ReportRecord> records;
 
-    public AcademicReport(Student student, List<Enrollment> enrollments) {
-        this.student = student;
-        this.enrollments = enrollments;
+    public AcademicReport(
+            int studentId,
+            String studentName,
+            String academicYear,
+            List<ReportRecord> records) {
+        this.studentId = studentId;
+        this.studentName = studentName;
+        this.academicYear = academicYear;
+        this.records = records;
     }
 
-    /**
-     * Método abstracto para obtener el formato específico del informe.
-     */
     public abstract String getFormat();
 
-    public Student getStudent() {
-        return student;
+    public int getStudentId() {
+        return studentId;
     }
 
-    public List<Enrollment> getEnrollments() {
-        return enrollments;
+    public String getStudentName() {
+        return studentName;
+    }
+
+    public String getAcademicYear() {
+        return academicYear;
+    }
+
+    public List<ReportRecord> getRecords() {
+        return records;
     }
 }
