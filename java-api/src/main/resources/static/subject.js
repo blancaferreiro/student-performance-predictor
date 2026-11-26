@@ -8,7 +8,7 @@ const subjectList = document.getElementById("subject-list");
 const message = document.getElementById("message");
 
 // Texto visible para cada valor que entiende el backend.
-const DIFFICULTY_LABELS = { EASY: "Easy", MEDIUM: "Medium", HARD: "Hard" };
+const DIFFICULTY_LABELS = { EASY: "Fácil", MEDIUM: "Media", HARD: "Difícil" };
 
 form.addEventListener("submit", saveSubject);
 loadSubjects();

@@ -8,6 +8,19 @@ services:
       - "8000:8000"
     restart: unless-stopped
 
+  report-service:
+    build:
+      context: ./report-api
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
   mysql:
     image: mysql:8.4
     environment:
@@ -35,12 +48,14 @@ services:
     environment:
       PYTHON_SERVICE_URL: http://python-service:8000
       REPORT_SERVICE_URL: http://report-service:8001
-      DB_URL: jdbc:mysql://mysql:3306/studentdb
+      DB_URL: "jdbc:mysql://mysql:3306/studentdb?allowPublicKeyRetrieval=true&useSSL=false"
       DB_USER: app
       DB_PASSWORD: app
     depends_on:
       python-service:
         condition: service_started
+      report-service:
+        condition: service_healthy
       mysql:
         condition: service_healthy
     restart: unless-stopped

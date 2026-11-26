@@ -11,11 +11,8 @@ def calculate_predicted_grade(study_hours: float, difficulty: str = "MEDIUM") ->
     if difficulty not in difficulty_factors:
         raise ValueError("Difficulty must be EASY, MEDIUM or HARD")
 
-    predicted_grade = study_hours * 0.15
+    predicted_grade = study_hours * 1.5
 
     predicted_grade *= difficulty_factors[difficulty]
 
-    if predicted_grade > 10.0:
-        return 10.0
-
-    return predicted_grade
+    return max(0.0, min(predicted_grade, 10.0))

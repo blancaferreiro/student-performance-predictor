@@ -1,4 +1,3 @@
-
 package edu.example.studentperformance;
 
 import java.sql.Connection;
@@ -6,12 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Guarda estudiantes y sus matrículas en MySQL.
- */
 public class StudentRepository {
 
     public List<Student> findAll() {
@@ -115,7 +112,9 @@ public class StudentRepository {
                 }
 
                 student.setId(id);
+
                 saveEnrollments(connection, student);
+
                 connection.commit();
 
                 return student;
@@ -147,7 +146,10 @@ public class StudentRepository {
     private void loadEnrollments(Connection connection, Student student)
             throws SQLException {
 
-        String sql = "SELECT subject_id, study_hours FROM enrollments WHERE student_id = ?";
+        String sql = "SELECT e.subject_id, e.course_id, e.study_hours, e.grade, c.name AS course_name "
+                + "FROM enrollments e "
+                + "LEFT JOIN courses c ON e.course_id = c.id "
+                + "WHERE e.student_id = ?";
 
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, student.getId());
@@ -156,10 +158,18 @@ public class StudentRepository {
                 List<Enrollment> enrollments = new ArrayList<>();
 
                 while (rows.next()) {
-                    enrollments.add(new Enrollment(
+                    Object gradeValue = rows.getObject("grade");
+                    String courseName = rows.getString("course_name");
+
+                    Enrollment enrollment = new Enrollment(
                             rows.getLong("subject_id"),
-                            rows.getDouble("study_hours")
-                    ));
+                            rows.getInt("course_id"),
+                            rows.getDouble("study_hours"),
+                            gradeValue == null ? null : rows.getDouble("grade")
+                    );
+                    enrollment.setCourse(courseName);
+                    enrollment.setAcademicYear(courseName);
+                    enrollments.add(enrollment);
                 }
 
                 student.setEnrollments(enrollments);
@@ -171,19 +181,32 @@ public class StudentRepository {
             throws SQLException {
 
         String deleteSql = "DELETE FROM enrollments WHERE student_id = ?";
-        String insertSql = "INSERT INTO enrollments (student_id, subject_id, study_hours) "
-                + "VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO enrollments "
+                + "(student_id, subject_id, course_id, study_hours, grade) "
+                + "VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement deleteStatement = connection.prepareStatement(deleteSql)) {
             deleteStatement.setInt(1, student.getId());
             deleteStatement.executeUpdate();
         }
 
+        if (student.getEnrollments() == null || student.getEnrollments().isEmpty()) {
+            return;
+        }
+
         try (PreparedStatement insertStatement = connection.prepareStatement(insertSql)) {
             for (Enrollment enrollment : student.getEnrollments()) {
                 insertStatement.setInt(1, student.getId());
                 insertStatement.setLong(2, enrollment.getSubjectId());
-                insertStatement.setDouble(3, enrollment.getStudyHours());
+                insertStatement.setInt(3, enrollment.getCourseId());
+                insertStatement.setDouble(4, enrollment.getStudyHours());
+
+                if (enrollment.getGrade() == null) {
+                    insertStatement.setNull(5, Types.DOUBLE);
+                } else {
+                    insertStatement.setDouble(5, enrollment.getGrade());
+                }
+
                 insertStatement.addBatch();
             }
 
