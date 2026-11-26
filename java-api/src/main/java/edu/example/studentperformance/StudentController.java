@@ -1,4 +1,3 @@
-
 package edu.example.studentperformance;
 
 import com.google.gson.Gson;
@@ -10,15 +9,19 @@ import com.sun.net.httpserver.HttpHandler;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.NoSuchElementException;
 
 public class StudentController implements HttpHandler {
 
     private final StudentService service;
+    private final AcademicReportFacade reportFacade;
     private final Gson gson;
 
-    public StudentController(StudentService service) {
+    public StudentController(StudentService service, AcademicReportFacade reportFacade) {
         this.service = service;
+        this.reportFacade = reportFacade;
         gson = new Gson();
     }
 
@@ -62,10 +65,20 @@ public class StudentController implements HttpHandler {
         }
 
         // GET /students/{id}/prediction
-        if (parts.length == 4 && "prediction".equals(parts[3])) {
-            int id = Integer.parseInt(parts[2]);
-            handlePrediction(exchange, method, id);
-            return;
+        // GET /students/{id}/report
+        if (parts.length == 4) {
+
+            if ("prediction".equals(parts[3])) {
+                int id = Integer.parseInt(parts[2]);
+                handlePrediction(exchange, method, id);
+                return;
+            }
+
+            if ("report".equals(parts[3])) {
+                int id = Integer.parseInt(parts[2]);
+                handleReport(exchange, method, id);
+                return;
+            }
         }
 
         // GET /students/{id}/subjects/{subjectId}/courses/{courseId}/prediction
@@ -247,6 +260,71 @@ public class StudentController implements HttpHandler {
 
         } catch (IOException exception) {
             sendError(exchange, 503, "Prediction service is unavailable");
+        }
+    }
+
+    private void handleReport(
+            HttpExchange exchange,
+            String method,
+            int id) throws IOException {
+
+        if (!"GET".equals(method)) {
+            sendError(exchange, 405, "Method not allowed");
+            return;
+        }
+
+        String formatParam = queryParameter(
+                exchange.getRequestURI().getQuery(), "format");
+
+        try {
+            ReportResult result = reportFacade.generateReport(id, formatParam);
+            sendReport(exchange, result);
+
+        } catch (IllegalArgumentException exception) {
+            sendError(exchange, 400, exception.getMessage());
+
+        } catch (NoSuchElementException exception) {
+            sendError(exchange, 404, exception.getMessage());
+
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt();
+            sendError(exchange, 503, "Report service is unavailable");
+
+        } catch (IOException exception) {
+            sendError(exchange, 503, "Report service is unavailable");
+        }
+    }
+
+    private String queryParameter(String query, String name) {
+        if (query == null) {
+            return null;
+        }
+
+        for (String pair : query.split("&")) {
+            String[] parts = pair.split("=", 2);
+
+            if (parts.length == 2 && name.equals(parts[0])) {
+                return URLDecoder.decode(parts[1], StandardCharsets.UTF_8);
+            }
+        }
+
+        return null;
+    }
+
+    private void sendReport(HttpExchange exchange, ReportResult result)
+            throws IOException {
+
+        byte[] body = result.getContent().getBytes(StandardCharsets.UTF_8);
+
+        exchange.getResponseHeaders().set("Content-Type", result.getMediaType());
+        exchange.getResponseHeaders().set(
+                "Content-Disposition",
+                "attachment; filename=\"" + result.getFilename() + "\"");
+
+        exchange.sendResponseHeaders(200, body.length);
+
+        try (OutputStream output = exchange.getResponseBody()) {
+            output.write(body);
         }
     }
 

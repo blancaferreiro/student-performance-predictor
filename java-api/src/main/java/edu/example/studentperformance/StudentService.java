@@ -1,4 +1,3 @@
-
 package edu.example.studentperformance;
 
 import java.io.IOException;
@@ -7,10 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Contiene las reglas de negocio y coordina el repositorio
- * con los servicios de predicción y cursos académicos.
- */
 public class StudentService {
 
     private final StudentRepository repository;
@@ -59,7 +54,6 @@ public class StudentService {
             return null;
         }
 
-        // Si no se envían matrículas, se conservan las existentes.
         if (student != null && student.getEnrollments() == null) {
             student.setEnrollments(existing.getEnrollments());
         }
@@ -75,9 +69,6 @@ public class StudentService {
         return repository.delete(id);
     }
 
-    /**
-     * Predice la nota utilizando las horas generales del estudiante.
-     */
     public double predictGrade(int id)
             throws IOException, InterruptedException {
 
@@ -90,14 +81,6 @@ public class StudentService {
         return predictionClient.requestPrediction(student.getStudyHours());
     }
 
-    /**
-     * Predice la nota de una asignatura.
-     *
-     * Este método mantiene la compatibilidad con llamadas antiguas.
-     * Si el estudiante tiene varias matrículas de esa asignatura
-     * en distintos cursos, devuelve -1 porque no se puede saber
-     * qué curso se quiere utilizar.
-     */
     public double predictGrade(int studentId, long subjectId)
             throws IOException, InterruptedException {
 
@@ -114,8 +97,6 @@ public class StudentService {
             if (enrollment.getSubjectId() != null
                     && enrollment.getSubjectId().longValue() == subjectId) {
 
-                // Si aparece más de una matrícula de esa asignatura,
-                // necesitamos que se indique el curso.
                 if (selectedEnrollment != null) {
                     return -1;
                 }
@@ -140,12 +121,6 @@ public class StudentService {
         );
     }
 
-    /**
-     * Predice la nota de una asignatura en un curso académico concreto.
-     *
-     * Utiliza las horas de estudio de la matrícula correspondiente
-     * a ese estudiante, asignatura y curso.
-     */
     public double predictGrade(
             int studentId,
             long subjectId,
@@ -188,9 +163,6 @@ public class StudentService {
         );
     }
 
-    /**
-     * Valida los datos del estudiante y sus matrículas.
-     */
     private boolean isValid(Student student) {
 
         if (student == null) {
@@ -213,7 +185,6 @@ public class StudentService {
             return false;
         }
 
-        // Guardamos la combinación asignatura + curso.
         Set<String> enrollmentKeys = new HashSet<>();
 
         for (Enrollment enrollment : enrollments) {
@@ -225,7 +196,6 @@ public class StudentService {
             Long subjectId = enrollment.getSubjectId();
             Integer courseId = enrollment.getCourseId();
 
-            // Comprobar identificadores.
             if (subjectId == null || subjectId <= 0) {
                 return false;
             }
@@ -234,36 +204,26 @@ public class StudentService {
                 return false;
             }
 
-            // Comprobar que existe la asignatura.
             if (!subjectRepository.existsById(subjectId)) {
                 return false;
             }
 
-            // Comprobar que existe el curso.
             if (courseRepository.findById(courseId) == null) {
                 return false;
             }
 
-            // Comprobar las horas de estudio.
             if (!Double.isFinite(enrollment.getStudyHours())
                     || enrollment.getStudyHours() < 0) {
                 return false;
             }
 
-            // Comprobar la calificación.
             Double grade = enrollment.getGrade();
-
             if (grade != null
-                    && (!Double.isFinite(grade)
-                    || grade < 0
-                    || grade > 10)) {
+                    && (!Double.isFinite(grade) || grade < 0 || grade > 10)) {
                 return false;
             }
 
-            // No permitir dos matrículas de la misma asignatura
-            // en el mismo curso.
             String key = subjectId + "-" + courseId;
-
             if (!enrollmentKeys.add(key)) {
                 return false;
             }
