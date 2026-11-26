@@ -102,7 +102,7 @@ Abre la aplicación en <http://localhost:8080>. La documentación interactiva de
 docker compose up -d --build
 ```
 
-> **Importante sobre los datos:** MySQL utiliza el volumen persistente `mysql-data`. `docker compose down` conserva ese volumen. No ejecutar `docker compose down -v` salvo que se quieran borrar también los datos de la base de datos.
+> **Importante sobre los datos:** MySQL utiliza el volumen persistente `mysql-data`. `docker compose down` conserva ese volumen. El esquema y los datos de prueba de `db/init/` solo se importan cuando el volumen está vacío; para volver a sembrar la base de datos hay que ejecutar `docker compose down -v` (borra todos los datos) y después `docker compose up -d --build`.
 
 ## 5. Funcionalidades de matrículas (HU-02)
 
@@ -173,6 +173,22 @@ La configuración de desarrollo se encuentra en `compose.yaml`.
 - Usuario de aplicación: `app`.
 
 Las credenciales incluidas en `compose.yaml` son valores locales de desarrollo. No deben reutilizarse en un despliegue público o de producción.
+
+### Inicialización de la base de datos
+
+El esquema y los datos de prueba se definen en `db/init/` y se montan en el contenedor MySQL mediante `/docker-entrypoint-initdb.d`:
+
+- `db/init/01-schema.sql`: crea las tablas `students`, `subjects`, `courses` y `enrollments`.
+- `db/init/02-seed.sql`: inserta cursos, asignaturas, estudiantes y matrículas de ejemplo.
+
+MySQL ejecuta estos archivos en orden alfabético **solo la primera vez** que se inicializa el volumen `mysql-data`. Si el volumen ya contiene datos, los scripts se ignoran. La aplicación Java ya no crea tablas: únicamente abre conexiones.
+
+Para reinicializar la base de datos desde cero (destructivo):
+
+```bash
+docker compose down -v
+docker compose up -d --build
+```
 
 ```powershell
 Invoke-RestMethod -Method Post -Uri http://localhost:8000/predict -ContentType "application/json" -Body '{"study_hours":5,"difficulty":"MEDIUM"}'

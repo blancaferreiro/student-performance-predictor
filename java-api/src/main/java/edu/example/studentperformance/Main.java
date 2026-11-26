@@ -10,8 +10,6 @@ public class Main {
     public static void main(String[] args)
             throws IOException, InterruptedException {
 
-        Database.init();
-
         StudentRepository repository = new StudentRepository();
         SubjectRepository subjectRepository = new SubjectRepository();
         CourseRepository courseRepository = new CourseRepository();

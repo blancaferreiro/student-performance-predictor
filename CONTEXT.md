@@ -28,6 +28,8 @@ Flujo: navegador → Java `:8080` → predicción/reportes Python → respuesta.
 
 - `README.md`: documentación completa, contrato REST y ejecución.
 - `compose.yaml`: MySQL, predicción, informes y Java.
+- `db/init/01-schema.sql`: esquema de las tablas de MySQL.
+- `db/init/02-seed.sql`: datos de prueba iniciales.
 - `requests.http`: ejemplos manuales de todos los endpoints.
 - `java-api/src/main/java/edu/example/studentperformance/`:
   - `Main.java`: composición de dependencias y rutas HTTP.
@@ -51,9 +53,8 @@ Flujo: navegador → Java `:8080` → predicción/reportes Python → respuesta.
 - `Enrollment`: `subjectId`, `studyHours`, `course`, `academicYear`, `grade`.
 - `Subject`: `id`, `name`, `difficulty`.
 
-Tablas MySQL: `students`, `subjects`, `enrollments`.
-La tabla `enrollments` tiene claves foráneas con `ON DELETE CASCADE`.
-`Database.ensureColumn()` añade `course`, `academic_year` y `grade` si la tabla ya existía.
+Tablas MySQL: `students`, `subjects`, `courses`, `enrollments`, creadas por `db/init/01-schema.sql`.
+La tabla `enrollments` tiene claves foráneas con `ON DELETE CASCADE` (y `ON DELETE RESTRICT` para el curso).
 
 Dificultad canónica en BD, Java, Python y API: `EASY`, `MEDIUM`, `HARD`.
 La UI muestra etiquetas en español (`Fácil`, `Media`, `Difícil`) sin cambiar los valores.
@@ -132,6 +133,10 @@ docker compose logs -f java-api
 docker compose down
 ```
 
+El esquema y los datos de prueba se cargan desde `db/init/` la primera vez que se
+crea el volumen `mysql-data`. Para reinicializar desde cero (destructivo):
+`docker compose down -v` y después `docker compose up --build -d`.
+
 URLs: <http://localhost:8080>, <http://localhost:8000/docs>, <http://localhost:8001/docs>.
 
 Local:
@@ -166,7 +171,7 @@ Variables relevantes en Docker: `PYTHON_SERVICE_URL`, `REPORT_SERVICE_URL`,
   `JAVA_HOME="/c/Program Files/Apache NetBeans/jdk"` y
   `/c/Program Files/Apache NetBeans/java/maven/bin/mvn`.
 - No hay `node` disponible; el JavaScript se revisa manualmente.
-- El volumen de MySQL puede conservar tablas antiguas; `ensureColumn()` las migra.
+- `db/init/*.sql` solo se ejecutan con el volumen `mysql-data` vacío; para re-sembrar, `docker compose down -v`.
 - El healthcheck de `report-service` usa `urllib` desde Python.
 
 ## 9. Pendientes
