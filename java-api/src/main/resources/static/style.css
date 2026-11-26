@@ -1,193 +1,245 @@
-/* Tipografías: si no hay conexión, el navegador usa las de reserva. */
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap");
 
-/* ---------- Colores y tipografía (cámbialos aquí) ---------- */
+/* =========================================
+   STUDENT PERFORMANCE PREDICTOR
+   Minimal · Elegant · Premium
+========================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
+
 :root {
-    --chalk: #1f4d3d;        /* verde pizarra */
-    --chalk-deep: #163a2e;
-    --pencil: #f4b630;       /* amarillo lápiz */
-    --page: #e9eee8;
-    --paper: #ffffff;
-    --ink: #1c2a24;
-    --muted: #5d6b63;
-    --line: #d5dcd2;
-    --field: #bcc7bb;
-    --ok: #1f6b4a;
-    --ok-bg: #e3f1e8;
-    --danger: #b3382c;
+    --background: #f7f7f2;
+    --surface: #ffffff;
+    --surface-soft: #f2f3ed;
 
-    --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
-    --font-head: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --primary: #405747;
+    --primary-dark: #304436;
+    --primary-light: #eaf0e9;
 
-    color: var(--ink);
-    background: var(--page);
-    font-family: var(--font-body);
-    font-size: 16px;
-    line-height: 1.5;
+    --text: #292f2a;
+    --muted: #858b82;
+    --border: #e9eae3;
+
+    --success: #47785c;
+    --success-bg: #edf4ee;
+    --danger: #b45c54;
+
+    --font-body: "DM Sans", sans-serif;
+    --font-heading: "Manrope", sans-serif;
 }
 
 * {
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
+html {
+    scroll-behavior: smooth;
 }
 
-/* ---------- Cabecera tipo pizarra ---------- */
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.65;
+}
+
+/* ---------- Cabecera ---------- */
+
 .site-header {
-    padding: 44px 0 76px;
-    background: var(--chalk);
-    border-bottom: 5px solid var(--pencil);
+    padding: 30px 0 58px;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
 }
 
 .site-header .inner {
-    width: min(860px, 92%);
+    width: min(1100px, 90%);
     margin: 0 auto;
 }
 
-h1, h2, h3, h4 {
-    font-family: var(--font-head);
-    line-height: 1.15;
-}
-
-h1 {
-    margin: 0 0 10px;
-    color: #fff;
-    font-size: clamp(1.9rem, 4.5vw, 2.7rem);
-    letter-spacing: -0.01em;
+.site-header h1 {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: -0.055em;
 }
 
 .introduction {
-    max-width: 56ch;
-    margin: 0 0 20px;
-    color: rgb(255 255 255 / 82%);
+    margin: 8px 0 18px;
+    color: var(--muted);
+    font-size: 0.98rem;
 }
 
 .header-link {
-    display: inline-block;
-    padding: 7px 16px;
-    border: 1px solid rgb(255 255 255 / 40%);
-    border-radius: 999px;
-    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
-    transition: background 0.15s, color 0.15s;
+    transition: color 0.2s ease;
 }
 
-.header-link:hover,
-.header-link:focus-visible {
-    background: var(--pencil);
-    border-color: var(--pencil);
-    color: var(--ink);
+.header-link:hover {
+    color: var(--primary-dark);
 }
 
-/* ---------- Contenido ---------- */
+/* ---------- Contenido principal ---------- */
+
 main {
-    position: relative;
-    width: min(860px, 92%);
-    margin: -44px auto 0;
-    padding-bottom: 64px;
+    width: min(1100px, 90%);
+    margin: 38px auto 0;
+    padding-bottom: 70px;
 }
+
+/* ---------- Paneles ---------- */
 
 .panel {
-    margin-bottom: 24px;
-    padding: 28px;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    background: var(--paper);
-    box-shadow: 0 1px 0 rgb(28 42 36 / 6%);
+    margin-bottom: 26px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: var(--surface);
+    box-shadow: 0 3px 12px rgb(38 47 39 / 3%);
+    transition: box-shadow 0.25s ease;
+}
+
+.panel:hover {
+    box-shadow: 0 7px 22px rgb(38 47 39 / 5%);
 }
 
 .panel h2 {
-    margin: 0 0 18px;
+    margin: 0 0 24px;
+    color: var(--text);
+    font-family: var(--font-heading);
     font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.035em;
 }
 
-/* ---------- Formularios ---------- */
+h1, h2, h3, h4 {
+    font-family: var(--font-heading);
+    line-height: 1.3;
+}
+
+/* ---------- Formulario ---------- */
+
 form {
     display: grid;
-    gap: 6px;
+    gap: 9px;
 }
 
 form > label {
-    margin-top: 10px;
+    margin-top: 12px;
+    color: var(--text);
+    font-size: 0.88rem;
     font-weight: 600;
-    font-size: 0.92rem;
 }
 
 input, select {
     width: 100%;
-    max-width: 420px;
-    padding: 10px 12px;
-    border: 1px solid var(--field);
+    max-width: 460px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
     border-radius: 8px;
-    background: #fcfdfb;
-    color: var(--ink);
+    background: #fcfcfa;
+    color: var(--text);
     font: inherit;
+    font-size: 0.93rem;
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                background 0.2s ease;
 }
 
-input:focus-visible,
-select:focus-visible {
-    border-color: var(--chalk);
-    outline: 3px solid rgb(244 182 48 / 55%);
-    outline-offset: 0;
+input::placeholder {
+    color: #adb1a9;
+}
+
+input:hover, select:hover {
+    border-color: #c9d0c6;
+}
+
+input:focus-visible, select:focus-visible {
+    border-color: var(--primary);
+    outline: none;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgb(64 87 71 / 10%);
 }
 
 input:disabled {
-    background: #eef1ec;
-    opacity: 0.6;
+    background: var(--surface-soft);
+    color: var(--muted);
+    cursor: not-allowed;
 }
 
 form h3 {
-    margin: 22px 0 0;
-    padding-top: 20px;
-    border-top: 1px solid var(--line);
-    font-size: 1.1rem;
+    margin: 25px 0 0;
+    padding-top: 23px;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-size: 1.05rem;
+    font-weight: 700;
 }
 
 form h3 + p {
-    margin: 0 0 4px;
+    margin: 0 0 8px;
     color: var(--muted);
+    font-size: 0.9rem;
 }
 
-/* Lista de asignaturas con casillas */
+/* ---------- Asignaturas ---------- */
+
 #subject-checkboxes {
     display: grid;
-    gap: 8px;
+    gap: 10px;
 }
 
 .enrollment-item {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    background: #f8faf6;
-    transition: border-color 0.15s, background 0.15s;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fcfcfa;
+    transition: border-color 0.2s ease,
+                background 0.2s ease;
+}
+
+.enrollment-item:hover {
+    border-color: #cbd5ca;
+    background: #ffffff;
 }
 
 .enrollment-item:has(input[type="checkbox"]:checked) {
-    border-color: var(--chalk);
-    background: #eef6f0;
+    border-color: #a9bca9;
+    background: var(--primary-light);
 }
 
 .enrollment-item input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
     margin: 0;
-    accent-color: var(--chalk);
+    accent-color: var(--primary);
+    cursor: pointer;
 }
 
 .enrollment-item label {
     margin: 0;
-    font-weight: 500;
+    color: var(--text);
+    font-size: 0.91rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .enrollment-item input[type="number"] {
     max-width: none;
+    padding: 9px 11px;
 }
 
 .enrollment-fields {
@@ -202,115 +254,147 @@ form h3 + p {
 }
 
 /* ---------- Botones ---------- */
+
 button {
-    padding: 10px 18px;
-    border: 1px solid transparent;
+    padding: 11px 19px;
+    border: 1px solid var(--primary);
     border-radius: 8px;
-    background: var(--chalk);
-    color: #fff;
-    font: inherit;
+    background: var(--primary);
+    color: #ffffff;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    transition: background 0.2s ease,
+                border-color 0.2s ease,
+                transform 0.2s ease,
+                box-shadow 0.2s ease;
 }
 
 button:hover {
-    background: var(--chalk-deep);
+    border-color: var(--primary-dark);
+    background: var(--primary-dark);
+    box-shadow: 0 4px 10px rgb(48 68 54 / 12%);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 button:focus-visible {
-    outline: 3px solid rgb(244 182 48 / 70%);
-    outline-offset: 2px;
+    outline: 3px solid rgb(64 87 71 / 25%);
+    outline-offset: 3px;
 }
 
 button.secondary {
-    border-color: var(--field);
-    background: transparent;
-    color: var(--ink);
+    border-color: var(--border);
+    background: #ffffff;
+    color: var(--text);
 }
 
 button.secondary:hover {
-    background: #eef1ec;
+    border-color: #cbd5ca;
+    background: var(--surface-soft);
+    box-shadow: none;
 }
 
 .form-actions,
 .student-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 14px;
+    gap: 10px;
+    margin-top: 18px;
 }
 
-/* ---------- Lista de estudiantes y asignaturas ---------- */
+/* ---------- Tarjetas de estudiantes ---------- */
+
 .student-card {
-    padding: 20px 0;
-    border-bottom: 1px solid var(--line);
+    margin-bottom: 18px;
+    padding: 23px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #ffffff;
+    transition: border-color 0.2s ease,
+                box-shadow 0.2s ease;
 }
 
-.student-card:first-child {
-    padding-top: 0;
-}
-
-.student-card:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
+.student-card:hover {
+    border-color: #d6ddd3;
+    box-shadow: 0 4px 15px rgb(38 47 39 / 4%);
 }
 
 .student-card strong {
-    font-family: var(--font-head);
-    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text);
+    font-family: var(--font-heading);
+    font-size: 1.12rem;
+    font-weight: 700;
 }
 
 .student-card p {
-    margin: 4px 0;
+    margin: 6px 0;
+    color: var(--muted);
+    font-size: 0.91rem;
 }
 
 .student-card h4 {
-    margin: 16px 0 6px;
-    color: var(--muted);
-    font-size: 0.95rem;
+    margin: 20px 0 10px;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 700;
 }
 
-/* Botón "Predict grade" de cada matrícula */
+/* ---------- Predicción por asignatura ---------- */
+
 .student-card > button {
-    margin: 2px 0 6px;
-    padding: 5px 12px;
-    border-color: var(--field);
-    background: transparent;
-    color: var(--ink);
-    font-size: 0.88rem;
+    margin: 4px 0 9px;
+    padding: 8px 13px;
+    border-color: #dce4db;
+    background: #ffffff;
+    color: var(--primary);
+    font-size: 0.84rem;
 }
 
 .student-card > button:hover {
-    background: #eef1ec;
+    border-color: #b9c9b8;
+    background: var(--primary-light);
+    box-shadow: none;
 }
 
-/* Botones del estudiante: Edit, Delete y Predict general grade */
+/* ---------- Acciones de estudiantes ---------- */
+
 .student-actions {
     padding-top: 16px;
-    border-top: 1px dashed var(--line);
+    border-top: 1px solid var(--border);
 }
 
 .student-actions button:nth-child(1) {
-    border-color: var(--field);
-    background: transparent;
-    color: var(--ink);
+    border-color: var(--border);
+    background: #ffffff;
+    color: var(--text);
 }
 
 .student-actions button:nth-child(1):hover {
-    background: #eef1ec;
+    border-color: #cbd5ca;
+    background: var(--surface-soft);
+    box-shadow: none;
 }
 
 .student-actions button:nth-child(2) {
-    border-color: #e3b9b4;
-    background: transparent;
+    border-color: #edddda;
+    background: #ffffff;
     color: var(--danger);
 }
 
 .student-actions button:nth-child(2):hover {
-    background: #fbeceb;
+    border-color: #d9aaa4;
+    background: #fcf4f2;
+    box-shadow: none;
 }
 
+<<<<<<< Updated upstream
 .report-actions {
     display: flex;
     flex-wrap: wrap;
@@ -336,13 +420,19 @@ button.secondary:hover {
 }
 
 /* Resultado de la predicción */
+=======
+/* ---------- Resultados ---------- */
+
+>>>>>>> Stashed changes
 .prediction {
     width: fit-content;
-    margin: 4px 0 8px;
-    padding: 3px 12px;
-    border-radius: 999px;
-    background: var(--ok-bg);
-    color: var(--ok);
+    margin: 8px 0 12px;
+    padding: 7px 13px;
+    border: 1px solid #dce9dd;
+    border-radius: 7px;
+    background: var(--success-bg);
+    color: var(--success);
+    font-size: 0.87rem;
     font-weight: 600;
 }
 
@@ -351,9 +441,11 @@ button.secondary:hover {
 }
 
 /* ---------- Mensajes ---------- */
+
 #message {
-    margin: 16px 0 0;
-    color: var(--ok);
+    margin: 17px 0 0;
+    color: var(--success);
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
@@ -370,27 +462,70 @@ button.secondary:hover {
     display: none !important;
 }
 
-/* ---------- Móvil ---------- */
-@media (max-width: 560px) {
+/* ---------- Responsive ---------- */
+
+@media (min-width: 900px) {
+    .site-header .inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px 30px;
+    }
+
+    .introduction {
+        flex-basis: 100%;
+        margin-bottom: 0;
+    }
+
+    main {
+        margin-top: 38px;
+    }
+}
+
+@media (max-width: 600px) {
     .site-header {
-        padding: 32px 0 64px;
+        padding: 28px 0 35px;
+    }
+
+    .site-header .inner,
+    main {
+        width: 92%;
+    }
+
+    main {
+        margin-top: 24px;
     }
 
     .panel {
-        padding: 20px;
+        padding: 21px;
+        border-radius: 11px;
     }
 
     .enrollment-item {
         grid-template-columns: auto 1fr;
+        gap: 10px;
     }
 
     .enrollment-fields {
         grid-template-columns: 1fr;
     }
+
+    .form-actions button,
+    .student-actions button {
+        flex: 1 1 auto;
+    }
+
+    .student-card {
+        padding: 18px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
         transition: none !important;
     }
 }
