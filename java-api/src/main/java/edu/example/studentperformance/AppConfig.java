@@ -17,7 +17,7 @@ public final class AppConfig {
     private AppConfig() {
         databaseUrl = getEnvironmentVariable(
                 "DB_URL",
-                "jdbc:mysql://localhost:3306/studentdb"
+                "jdbc:mysql://localhost:3306/studentdb?allowPublicKeyRetrieval=true&useSSL=false"
         );
 
         databaseUser = getEnvironmentVariable("DB_USER", "app");

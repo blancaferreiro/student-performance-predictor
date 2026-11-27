@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS enrollments (
   subject_id INT NOT NULL,
   course_id INT NOT NULL,
   study_hours DOUBLE NOT NULL CHECK (study_hours >= 0),
-  grade DOUBLE NULL,
+  grade DOUBLE NULL CHECK (grade IS NULL OR (grade >= 0 AND grade <= 10)),
   PRIMARY KEY (student_id, subject_id, course_id),
   FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
   FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,

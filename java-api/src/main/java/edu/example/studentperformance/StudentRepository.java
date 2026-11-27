@@ -7,7 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class StudentRepository {
 
@@ -180,6 +182,8 @@ public class StudentRepository {
     private void saveEnrollments(Connection connection, Student student)
             throws SQLException {
 
+        Map<String, Double> existingGrades = loadExistingGrades(connection, student.getId());
+
         String deleteSql = "DELETE FROM enrollments WHERE student_id = ?";
         String insertSql = "INSERT INTO enrollments "
                 + "(student_id, subject_id, course_id, study_hours, grade) "
@@ -201,10 +205,16 @@ public class StudentRepository {
                 insertStatement.setInt(3, enrollment.getCourseId());
                 insertStatement.setDouble(4, enrollment.getStudyHours());
 
-                if (enrollment.getGrade() == null) {
+                Double grade = enrollment.getGrade();
+                if (grade == null) {
+                    grade = existingGrades.get(
+                            enrollment.getSubjectId() + "-" + enrollment.getCourseId());
+                }
+
+                if (grade == null) {
                     insertStatement.setNull(5, Types.DOUBLE);
                 } else {
-                    insertStatement.setDouble(5, enrollment.getGrade());
+                    insertStatement.setDouble(5, grade);
                 }
 
                 insertStatement.addBatch();
@@ -212,6 +222,28 @@ public class StudentRepository {
 
             insertStatement.executeBatch();
         }
+    }
+
+    private Map<String, Double> loadExistingGrades(Connection connection, int studentId)
+            throws SQLException {
+
+        Map<String, Double> grades = new HashMap<>();
+        String sql = "SELECT subject_id, course_id, grade FROM enrollments "
+                + "WHERE student_id = ? AND grade IS NOT NULL";
+
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, studentId);
+
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    grades.put(
+                            rows.getLong("subject_id") + "-" + rows.getInt("course_id"),
+                            rows.getDouble("grade"));
+                }
+            }
+        }
+
+        return grades;
     }
 
     private Student toStudent(ResultSet rows) throws SQLException {

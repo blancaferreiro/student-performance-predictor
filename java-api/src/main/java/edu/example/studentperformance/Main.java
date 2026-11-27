@@ -14,10 +14,8 @@ public class Main {
         SubjectRepository subjectRepository = new SubjectRepository();
         CourseRepository courseRepository = new CourseRepository();
 
-        String reportServiceUrl = envOrDefault(
-                "REPORT_SERVICE_URL",
-                "http://localhost:8001");
-        ReportClient reportClient = new ReportClient(reportServiceUrl);
+        AppConfig config = AppConfig.getInstance();
+        ReportClient reportClient = new ReportClient(config.getReportServiceUrl());
         ReportGenerator reportGenerator = new PythonReportAdapter(reportClient);
         AcademicReportFacade reportFacade = new AcademicReportFacade(
                 repository,
@@ -52,15 +50,5 @@ public class Main {
         System.out.println(
                 "Student Performance Predictor is running at http://localhost:8080"
         );
-    }
-
-    private static String envOrDefault(String name, String defaultValue) {
-        String value = System.getenv(name);
-
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-
-        return value;
     }
 }
