@@ -12,7 +12,6 @@ public final class AppConfig {
     private final String databaseUrl;
     private final String databaseUser;
     private final String databasePassword;
-    private final String predictionServiceUrl;
     private final String reportServiceUrl;
 
     private AppConfig() {
@@ -23,11 +22,6 @@ public final class AppConfig {
 
         databaseUser = getEnvironmentVariable("DB_USER", "app");
         databasePassword = getEnvironmentVariable("DB_PASSWORD", "app");
-
-        predictionServiceUrl = getEnvironmentVariable(
-                "PYTHON_SERVICE_URL",
-                "http://localhost:8000"
-        );
 
         reportServiceUrl = getEnvironmentVariable(
                 "REPORT_SERVICE_URL",
@@ -59,10 +53,6 @@ public final class AppConfig {
 
     public String getDatabasePassword() {
         return databasePassword;
-    }
-
-    public String getPredictionServiceUrl() {
-        return predictionServiceUrl;
     }
 
     public String getReportServiceUrl() {

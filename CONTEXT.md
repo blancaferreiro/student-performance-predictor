@@ -22,7 +22,7 @@ Ejemplo didáctico de arquitectura por capas y microservicios:
 | Informes | FastAPI | `8001` | `POST /reports/{format}` |
 | MySQL | MySQL 8.4 | `3306` | Persistencia |
 
-Flujo: navegador → Java `:8080` → predicción/reportes Python → respuesta.
+Flujo: navegador → Java `:8080` (datos e informes) y navegador → predicción Python `:8000` (directo) → respuesta.
 
 ## 2. Archivos clave
 
@@ -33,7 +33,7 @@ Flujo: navegador → Java `:8080` → predicción/reportes Python → respuesta.
 - `requests.http`: ejemplos manuales de todos los endpoints.
 - `java-api/src/main/java/edu/example/studentperformance/`:
   - `Main.java`: composición de dependencias y rutas HTTP.
-  - `StudentController.java`: CRUD, predicciones y `GET /students/{id}/report`.
+  - `StudentController.java`: CRUD y `GET /students/{id}/report`.
   - `StudentService.java`, `StudentRepository.java`: lógica y persistencia.
   - `Database.java`: creación de tablas y migración idempotente.
   - `Enrollment.java`, `Student.java`, `Subject.java`: dominio.
@@ -91,9 +91,8 @@ Mapeo Adapter:
 Java:
 
 - `GET /students`, `GET /students/{id}`, `POST /students`, `PUT /students/{id}`, `DELETE /students/{id}`.
-- `GET /students/{id}/prediction`.
-- `GET /students/{id}/subjects/{subjectId}/prediction`.
 - `GET /students/{id}/report?format=csv|json` → descarga con `Content-Disposition`.
+- La predicción de nota no pasa por Java: el navegador llama directamente a `POST :8000/predict`.
 - `GET /api/subjects`, `POST /api/subjects` (`difficulty`: `EASY|MEDIUM|HARD`).
 - `GET /subjects` → vista web.
 - Errores: `400` entrada inválida, `404` no encontrado, `405` método no permitido,
@@ -147,10 +146,10 @@ cd report-api && python -m uvicorn app.main:app --reload --port 8001
 cd java-api && mvn compile exec:java
 ```
 
-Variables relevantes en Docker: `PYTHON_SERVICE_URL`, `REPORT_SERVICE_URL`,
-`DB_URL`, `DB_USER`, `DB_PASSWORD`. Por defecto en local:
-`http://localhost:8000`, `http://localhost:8001`,
-`jdbc:mysql://localhost:3306/studentdb`, `app`, `app`.
+Variables relevantes en Docker: `REPORT_SERVICE_URL`, `DB_URL`, `DB_USER`,
+`DB_PASSWORD`. Por defecto en local:
+`http://localhost:8001`, `jdbc:mysql://localhost:3306/studentdb`, `app`, `app`.
+La URL de predicción no se configura en Java: el navegador usa `http://<host>:8000`.
 
 ## 7. Verificación realizada
 

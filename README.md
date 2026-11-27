@@ -10,20 +10,19 @@ La aplicación está compuesta por tres servicios:
 
 ```text
 Navegador (HTML, CSS, JavaScript)
-            |
-            | HTTP en el puerto 8080
-            v
-API Java (HttpServer y HashMap)
-            |                         |
-            | POST /predict           | POST /reports/{format}
-            | puerto 8000             | puerto 8001
-            v                         v
-API de predicción (FastAPI)   API de informes (FastAPI)
+        |                         |
+        | HTTP :8080              | POST /predict :8000
+        v                         v
+API Java (HttpServer y HashMap)   API de predicción (FastAPI)
+        |
+        | POST /reports/{format} :8001
+        v
+API de informes (FastAPI)
 ```
 
 El servicio de informes es independiente del de predicciones y genera los documentos CSV y JSON. Java lo integra mediante el patrón Adapter, de modo que el controlador y el servicio solo dependen de la interfaz `ReportGenerator`.
 
-El navegador se comunica únicamente con Java. Java también sirve el frontend, por lo que el ejemplo utiliza un único origen en el navegador y no necesita configuración CORS. Gson es la única dependencia de Java; Maven la descarga y proporciona comandos reproducibles para compilar y ejecutar el proyecto, pero Maven no forma parte de la lección.
+El navegador se comunica con Java para gestionar estudiantes, asignaturas, cursos y matrículas, y llama directamente a la API de predicción (`:8000`) al calcular una nota; por eso el servicio de predicción habilita CORS. Java sigue sirviendo el frontend e integra el servicio de informes (`:8001`) mediante el patrón Adapter, de modo que el controlador y el servicio solo dependen de la interfaz `ReportGenerator`. Gson es la única dependencia de Java; Maven la descarga y proporciona comandos reproducibles para compilar y ejecutar el proyecto, pero Maven no forma parte de la lección.
 
 ## 2. Requisitos
 
@@ -96,7 +95,7 @@ Volver a iniciar:
 docker compose up -d
 ```
 
-Abre la aplicación en <http://localhost:8080>. La documentación interactiva del servicio de predicción continúa disponible en <http://localhost:8000/docs> y la del servicio de informes en <http://localhost:8001/docs>. Dentro de Docker, Java utiliza los nombres de servicio `python-service` y `report-service` para comunicarse con los microservicios.
+Abre la aplicación en <http://localhost:8080>. La documentación interactiva del servicio de predicción continúa disponible en <http://localhost:8000/docs> y la del servicio de informes en <http://localhost:8001/docs>. Las predicciones se solicitan directamente desde el navegador a `http://localhost:8000/predict`; dentro de Docker, Java utiliza el nombre de servicio `report-service` para los informes.
 
 ```bash
 docker compose up -d --build
@@ -129,8 +128,8 @@ La clave primaria de la tabla `enrollments` es la combinación `(student_id, sub
 | POST | `/students` | Crear un estudiante |
 | PUT | `/students/{id}` | Actualizar un estudiante y añadir/actualizar matrículas |
 | DELETE | `/students/{id}` | Eliminar un estudiante |
-| GET | `/students/{id}/prediction` | Predicción general del estudiante |
-| GET | `/students/{id}/subjects/{subjectId}/courses/{courseId}/prediction` | Predicción de una matrícula concreta |
+
+La predicción de nota no pasa por Java: el botón de la web llama directamente a `POST http://localhost:8000/predict` con `study_hours` y `difficulty`.
 
 Ejemplo de cuerpo JSON para crear un estudiante con una matrícula:
 
@@ -232,11 +231,9 @@ Después, recargar el navegador sin caché (Cmd + Shift + R en Mac; Ctrl + Shift
 | POST | `/students` | `201` | Crear un estudiante |
 | PUT | `/students/{id}` | `200` | Actualizar un estudiante |
 | DELETE | `/students/{id}` | `204` | Eliminar un estudiante |
-| GET | `/students/{id}/prediction` | `200` | Solicitar una predicción ficticia |
-| POST | `/predict` de Python | `200` | Calcular una predicción ficticia |
+| POST | `/predict` de Python | `200` | Calcular una predicción ficticia (llamada directa desde el navegador) |
 | GET | `/api/subjects` | `200` | Listar asignaturas |
 | POST | `/api/subjects` | `201` | Crear una asignatura (`name`, `difficulty`: `EASY`, `MEDIUM` o `HARD`) |
-| GET | `/students/{id}/subjects/{subjectId}/prediction` | `200` | Predicción según las horas de la matrícula y la dificultad |
 | GET | `/students/{id}/report?format=csv\|json` | `200` | Descargar el informe académico del estudiante |
 | POST | `/reports/{format}` de Python | `200` | Generar el contenido de un informe (`csv` o `json`) |
 | GET | `/subjects` | `200` | Vista web de gestión de asignaturas |

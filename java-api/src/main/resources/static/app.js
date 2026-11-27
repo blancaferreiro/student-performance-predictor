@@ -14,6 +14,7 @@ let currentSubjects = [];
 let currentCourses = [];
 let currentEnrollments = [];
 const DIFFICULTY_LABELS = { EASY: "Fácil", MEDIUM: "Media", HARD: "Difícil" };
+const PREDICTION_API_URL = "http://" + window.location.hostname + ":8000";
 
 form.addEventListener("submit", saveStudent);
 cancelEditButton.addEventListener("click", resetForm);
@@ -398,18 +399,7 @@ function renderStudents(students) {
             createButton("Delete", () => deleteStudent(student.id))
         );
 
-        actions.appendChild(createButton(
-            "Predict general grade",
-            () => requestPrediction(student.id)
-        ));
-
         card.appendChild(actions);
-
-        const generalPrediction = document.createElement("p");
-        generalPrediction.className = "prediction";
-        generalPrediction.id = "prediction-general-" + student.id;
-
-        card.appendChild(generalPrediction);
 
         const reports = document.createElement("div");
         reports.className = "report-actions";
@@ -499,33 +489,6 @@ async function deleteStudent(studentId) {
     }
 }
 
-async function requestPrediction(studentId) {
-    try {
-        const response = await fetch(
-            "/students/" + studentId + "/prediction"
-        );
-
-        if (!response.ok) {
-            await showApiError(response);
-            return;
-        }
-
-        const prediction = await response.json();
-
-        const result = document.getElementById(
-            "prediction-general-" + studentId
-        );
-
-        if (result) {
-            result.textContent =
-                "Predicted grade: " + prediction.predictedGrade;
-        }
-
-    } catch (error) {
-        showMessage("Could not request a prediction.", true);
-    }
-}
-
 async function requestSubjectPrediction(
     studentId,
     subjectId,
@@ -535,26 +498,53 @@ async function requestSubjectPrediction(
         getPredictionElementId(studentId, subjectId, courseId)
     );
 
+    if (!result) {
+        return;
+    }
+
+    const student = currentStudents.find(
+        item => Number(item.id) === Number(studentId)
+    );
+
+    const enrollment = student && student.enrollments
+        ? student.enrollments.find(
+            item => Number(item.subjectId) === Number(subjectId)
+                && Number(item.courseId) === Number(courseId)
+        )
+        : null;
+
+    const subject = currentSubjects.find(
+        item => Number(item.id) === Number(subjectId)
+    );
+
+    if (!enrollment || !subject) {
+        result.textContent = "Could not request a prediction.";
+        return;
+    }
+
     result.textContent = "Requesting prediction...";
 
     try {
-        const response = await fetch(
-            "/students/" + studentId +
-            "/subjects/" + subjectId +
-            "/courses/" + courseId +
-            "/prediction"
-        );
+        const response = await fetch(PREDICTION_API_URL + "/predict", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                study_hours: enrollment.studyHours,
+                difficulty: subject.difficulty
+            })
+        });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            result.textContent = errorData.error || "Prediction failed.";
+            result.textContent = "Prediction failed.";
             return;
         }
 
         const prediction = await response.json();
 
         result.textContent =
-            "Predicted grade: " + prediction.predictedGrade;
+            "Predicted grade: " + prediction.predicted_grade;
 
     } catch (error) {
         result.textContent = "Could not request a prediction.";

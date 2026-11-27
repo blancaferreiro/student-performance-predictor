@@ -14,11 +14,6 @@ public class Main {
         SubjectRepository subjectRepository = new SubjectRepository();
         CourseRepository courseRepository = new CourseRepository();
 
-        String predictionServiceUrl = envOrDefault(
-                "PYTHON_SERVICE_URL",
-                "http://localhost:8000");
-        PredictionClient predictionClient = new PredictionClient(predictionServiceUrl);
-
         String reportServiceUrl = envOrDefault(
                 "REPORT_SERVICE_URL",
                 "http://localhost:8001");
@@ -32,7 +27,6 @@ public class Main {
 
         StudentService service = new StudentService(
                 repository,
-                predictionClient,
                 subjectRepository,
                 courseRepository
         );

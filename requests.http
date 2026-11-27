@@ -36,9 +36,14 @@ DELETE http://localhost:8080/students/1
 
 ###
 
-### Predict student performance
-GET http://localhost:8080/students/1/prediction
+### Predict grade directly from the Python service
+POST http://localhost:8000/predict
+Content-Type: application/json
 
+{
+    "study_hours": 12,
+    "difficulty": "MEDIUM"
+}
 
 ###
 
@@ -75,11 +80,6 @@ Content-Type: application/json
         }
     ]
 }
-
-###
-
-### Predict student performance for one subject
-GET http://localhost:8080/students/1/subjects/1/prediction
 
 ###
 

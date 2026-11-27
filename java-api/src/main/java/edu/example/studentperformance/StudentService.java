@@ -1,6 +1,5 @@
 package edu.example.studentperformance;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -9,18 +8,15 @@ import java.util.Set;
 public class StudentService {
 
     private final StudentRepository repository;
-    private final PredictionClient predictionClient;
     private final SubjectRepository subjectRepository;
     private final CourseRepository courseRepository;
 
     public StudentService(
             StudentRepository repository,
-            PredictionClient predictionClient,
             SubjectRepository subjectRepository,
             CourseRepository courseRepository) {
 
         this.repository = repository;
-        this.predictionClient = predictionClient;
         this.subjectRepository = subjectRepository;
         this.courseRepository = courseRepository;
     }
@@ -67,100 +63,6 @@ public class StudentService {
 
     public boolean deleteStudent(int id) {
         return repository.delete(id);
-    }
-
-    public double predictGrade(int id)
-            throws IOException, InterruptedException {
-
-        Student student = repository.findById(id);
-
-        if (student == null) {
-            return -1;
-        }
-
-        return predictionClient.requestPrediction(student.getStudyHours());
-    }
-
-    public double predictGrade(int studentId, long subjectId)
-            throws IOException, InterruptedException {
-
-        Student student = repository.findById(studentId);
-
-        if (student == null || student.getEnrollments() == null) {
-            return -1;
-        }
-
-        Enrollment selectedEnrollment = null;
-
-        for (Enrollment enrollment : student.getEnrollments()) {
-
-            if (enrollment.getSubjectId() != null
-                    && enrollment.getSubjectId().longValue() == subjectId) {
-
-                if (selectedEnrollment != null) {
-                    return -1;
-                }
-
-                selectedEnrollment = enrollment;
-            }
-        }
-
-        if (selectedEnrollment == null) {
-            return -1;
-        }
-
-        Subject subject = subjectRepository.findById(subjectId);
-
-        if (subject == null || subject.getDifficulty() == null) {
-            return -1;
-        }
-
-        return predictionClient.requestPrediction(
-                selectedEnrollment.getStudyHours(),
-                subject.getDifficulty().name()
-        );
-    }
-
-    public double predictGrade(
-            int studentId,
-            long subjectId,
-            int courseId)
-            throws IOException, InterruptedException {
-
-        Student student = repository.findById(studentId);
-
-        if (student == null || student.getEnrollments() == null) {
-            return -1;
-        }
-
-        Enrollment selectedEnrollment = null;
-
-        for (Enrollment enrollment : student.getEnrollments()) {
-
-            if (enrollment.getSubjectId() != null
-                    && enrollment.getSubjectId().longValue() == subjectId
-                    && enrollment.getCourseId() != null
-                    && enrollment.getCourseId().intValue() == courseId) {
-
-                selectedEnrollment = enrollment;
-                break;
-            }
-        }
-
-        if (selectedEnrollment == null) {
-            return -1;
-        }
-
-        Subject subject = subjectRepository.findById(subjectId);
-
-        if (subject == null || subject.getDifficulty() == null) {
-            return -1;
-        }
-
-        return predictionClient.requestPrediction(
-                selectedEnrollment.getStudyHours(),
-                subject.getDifficulty().name()
-        );
     }
 
     private boolean isValid(Student student) {

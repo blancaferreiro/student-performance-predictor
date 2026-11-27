@@ -1,14 +1,29 @@
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Database.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Difficulty.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Enrollment.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Main.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\PredictionClient.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StaticFileHandler.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Student.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentController.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentRepository.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentService.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Subject.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectController.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectRepository.java
-C:\Users\Blanca\CLASE\2º Carrera\1 Cuatrimestre\Ingeniería de software\Práctica\practica_complicada\ESX-main\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectService.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\AcademicReport.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\AcademicReportFacade.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\AppConfig.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Course.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\CourseController.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\CourseRepository.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\CourseService.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\CsvReport.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Database.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Difficulty.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Enrollment.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\JsonReport.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Main.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\PythonReportAdapter.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportClient.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportFactory.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportFormat.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportGenerator.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportRecord.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\ReportResult.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StaticFileHandler.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Student.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentController.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentRepository.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\StudentService.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\Subject.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectController.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectRepository.java
+C:\Users\Raúl\Documents\GitHub\student-performance-predictor\java-api\src\main\java\edu\example\studentperformance\SubjectService.java

@@ -64,36 +64,10 @@ public class StudentController implements HttpHandler {
             return;
         }
 
-        // GET /students/{id}/prediction
         // GET /students/{id}/report
-        if (parts.length == 4) {
-
-            if ("prediction".equals(parts[3])) {
-                int id = Integer.parseInt(parts[2]);
-                handlePrediction(exchange, method, id);
-                return;
-            }
-
-            if ("report".equals(parts[3])) {
-                int id = Integer.parseInt(parts[2]);
-                handleReport(exchange, method, id);
-                return;
-            }
-        }
-
-        // GET /students/{id}/subjects/{subjectId}/courses/{courseId}/prediction
-        if (parts.length == 8
-                && "subjects".equals(parts[3])
-                && "courses".equals(parts[5])
-                && "prediction".equals(parts[7])) {
-
-            int studentId = Integer.parseInt(parts[2]);
-            long subjectId = Long.parseLong(parts[4]);
-            int courseId = Integer.parseInt(parts[6]);
-
-            handleSubjectPrediction(
-                    exchange, method, studentId, subjectId, courseId
-            );
+        if (parts.length == 4 && "report".equals(parts[3])) {
+            int id = Integer.parseInt(parts[2]);
+            handleReport(exchange, method, id);
             return;
         }
 
@@ -177,90 +151,6 @@ public class StudentController implements HttpHandler {
         }
 
         sendError(exchange, 405, "Method not allowed");
-    }
-
-    private void handlePrediction(
-            HttpExchange exchange,
-            String method,
-            int id) throws IOException {
-
-        if (!"GET".equals(method)) {
-            sendError(exchange, 405, "Method not allowed");
-            return;
-        }
-
-        Student student = service.getStudent(id);
-
-        if (student == null) {
-            sendError(exchange, 404, "Student not found");
-            return;
-        }
-
-        try {
-            double predictedGrade = service.predictGrade(id);
-
-            JsonObject response = new JsonObject();
-            response.addProperty("id", student.getId());
-            response.addProperty("name", student.getName());
-            response.addProperty("studyHours", student.getStudyHours());
-            response.addProperty("predictedGrade", predictedGrade);
-
-            sendJson(exchange, 200, gson.toJson(response));
-
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            sendError(exchange, 503, "Prediction service is unavailable");
-
-        } catch (IOException exception) {
-            sendError(exchange, 503, "Prediction service is unavailable");
-        }
-    }
-
-    private void handleSubjectPrediction(
-            HttpExchange exchange,
-            String method,
-            int studentId,
-            long subjectId,
-            int courseId) throws IOException {
-
-        if (!"GET".equals(method)) {
-            sendError(exchange, 405, "Method not allowed");
-            return;
-        }
-
-        Student student = service.getStudent(studentId);
-
-        if (student == null) {
-            sendError(exchange, 404, "Student not found");
-            return;
-        }
-
-        try {
-            double predictedGrade = service.predictGrade(
-                    studentId, subjectId, courseId
-            );
-
-            if (predictedGrade < 0) {
-                sendError(exchange, 404, "Enrollment or subject not found");
-                return;
-            }
-
-            JsonObject response = new JsonObject();
-            response.addProperty("studentId", studentId);
-            response.addProperty("studentName", student.getName());
-            response.addProperty("subjectId", subjectId);
-            response.addProperty("courseId", courseId);
-            response.addProperty("predictedGrade", predictedGrade);
-
-            sendJson(exchange, 200, gson.toJson(response));
-
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt();
-            sendError(exchange, 503, "Prediction service is unavailable");
-
-        } catch (IOException exception) {
-            sendError(exchange, 503, "Prediction service is unavailable");
-        }
     }
 
     private void handleReport(
